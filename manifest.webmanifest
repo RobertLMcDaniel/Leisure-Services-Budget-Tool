@@ -1,0 +1,10 @@
+{
+  "name": "Leisure Services Budget Tool",
+  "short_name": "LS Budget Tool",
+  "start_url": "./index.html",
+  "display": "standalone",
+  "background_color": "#ffffff",
+  "theme_color": "#f29a45",
+  "description": "Single-page budget review and XLSX export tool for Leisure Services.",
+  "icons": []
+}
