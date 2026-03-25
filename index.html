@@ -205,6 +205,7 @@
         <h1>Leisure Services Budget Tool</h1>
         <div class="home-actions">
           <button id="startBtn" class="btn">Start</button>
+          <button id="testBtn" class="btn secondary" type="button">Test</button>
           <button id="aboutBtn" class="btn secondary">About</button>
         </div>
       </section>
@@ -371,6 +372,7 @@
   <script src="https://cdn.jsdelivr.net/npm/jszip@3.10.1/dist/jszip.min.js"></script>
   <script>
     const EXCLUDED_SHEETS = new Set(['011 Tree Bank Fund', '315 Rec Impact']);
+    const TEST_WORKBOOK_PATH = './test-data/test.xlsx';
     const ALLOWED_COLS = [0, 2, 3, 6, 8, 10, 12]; // A, C, D, G, I, K, M
     const VALUE_COLS = [6, 8, 10, 12]; // G, I, K, M
     const COL = { A: 0, C: 2, D: 3, G: 6, I: 8, K: 10, M: 12, R: 17 };
@@ -383,7 +385,7 @@
     const $ = (id) => document.getElementById(id);
     const el = {
       home: $('homeScreen'), upload: $('uploadScreen'), workspace: $('workspaceScreen'),
-      start: $('startBtn'), about: $('aboutBtn'), closeAbout: $('closeAboutBtn'), modal: $('aboutModal'), homeUpload: $('homeFromUploadBtn'),
+      start: $('startBtn'), test: $('testBtn'), about: $('aboutBtn'), closeAbout: $('closeAboutBtn'), modal: $('aboutModal'), homeUpload: $('homeFromUploadBtn'),
       dropZone: $('dropZone'), fileInput: $('fileInput'), pickBtn: $('pickBtn'), nextBtn: $('nextBtn'), fileMeta: $('fileMeta'), exportBtn: $('exportBtn'),
       deptSelect: $('departmentSelect'), comboViewBtn: $('comboViewBtn'), sectionEditToggleBtn: $('sectionEditToggleBtn'), dataRegion: $('dataRegion'), contentRow: document.querySelector('.content-row'), tabBtns: [...document.querySelectorAll('.tab-btn')], tabsWrap: document.querySelector('.tabs'),
       editorPanel: $('editorPanel'), editorTitle: $('editorTitle'), editorSubtitle: $('editorSubtitle'), adoptedLabel: $('adoptedLabel'), proposalLabel: $('proposalLabel'), adoptedValue: $('adoptedValue'), proposalValue: $('proposalValue'),
@@ -1715,6 +1717,47 @@
 
     function setFile(file) { if (!file) return; selectedFile = file; el.fileMeta.textContent = trimText(file.name); el.nextBtn.disabled = false; }
 
+    async function loadWorkbookIntoWorkspace(file, loadingMessage = 'Processing...') {
+      if (!file) return;
+      selectedFile = file;
+      el.nextBtn.disabled = true;
+      el.fileMeta.textContent = loadingMessage;
+      try {
+        departments = await parseWorkbook(selectedFile);
+        edited2027.clear();
+        hydrateNotesFromWorkbook();
+        fillDepartmentOptions();
+        el.deptSelect.value = "__all__";
+        activeSection = 'personnel';
+        selectedItem = null;
+        el.tabBtns.forEach((btn) => btn.classList.toggle('active', btn.dataset.section === activeSection));
+        updateSectionEditToggleButton();
+        renderData();
+        show(el.workspace);
+        el.exportBtn.disabled = false;
+      } catch (error) {
+        console.error(error);
+        el.fileMeta.textContent = 'Unable to read spreadsheet.';
+      } finally {
+        el.nextBtn.disabled = !selectedFile;
+      }
+    }
+
+    async function loadTestWorkbook() {
+      show(el.upload);
+      el.fileMeta.textContent = 'Loading test workbook...';
+      try {
+        const response = await fetch(TEST_WORKBOOK_PATH, { cache: 'no-store' });
+        if (!response.ok) throw new Error(`Could not load ${TEST_WORKBOOK_PATH} (${response.status})`);
+        const blob = await response.blob();
+        const file = new File([blob], 'test.xlsx', { type: blob.type || 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet' });
+        await loadWorkbookIntoWorkspace(file, 'Processing test workbook...');
+      } catch (error) {
+        console.error(error);
+        el.fileMeta.textContent = `Unable to load ${TEST_WORKBOOK_PATH}.`;
+      }
+    }
+
     function downloadBlob(blob, filename) {
       const url = URL.createObjectURL(blob);
       const link = document.createElement('a');
@@ -2481,30 +2524,11 @@
 
     async function handleNext() {
       if (!selectedFile) return;
-      el.nextBtn.disabled = true;
-      el.fileMeta.textContent = 'Processing...';
-      try {
-        departments = await parseWorkbook(selectedFile);
-        edited2027.clear();
-        hydrateNotesFromWorkbook();
-        fillDepartmentOptions();
-        el.deptSelect.value = "__all__";
-        activeSection = 'personnel';
-        selectedItem = null;
-        el.tabBtns.forEach((btn) => btn.classList.toggle('active', btn.dataset.section === activeSection));
-        updateSectionEditToggleButton();
-        renderData();
-        show(el.workspace);
-        el.exportBtn.disabled = false;
-      } catch (error) {
-        console.error(error);
-        el.fileMeta.textContent = 'Unable to read spreadsheet.';
-      } finally {
-        el.nextBtn.disabled = !selectedFile;
-      }
+      await loadWorkbookIntoWorkspace(selectedFile);
     }
 
     el.start.addEventListener('click', () => show(el.upload));
+    el.test?.addEventListener('click', loadTestWorkbook);
     el.homeUpload.addEventListener('click', () => show(el.home));
     el.about.addEventListener('click', () => el.modal.classList.add('open'));
     el.closeAbout.addEventListener('click', () => el.modal.classList.remove('open'));
