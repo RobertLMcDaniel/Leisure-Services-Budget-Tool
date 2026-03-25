@@ -1,0 +1,2664 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <meta name="theme-color" content="#f29a45" />
+  <title>Leisure Services Budget Tool</title>
+  <link rel="manifest" href="./manifest.webmanifest" />
+  <style>
+    :root { --orange:#f29a45; --orange-deep:#de7d30; --line:#e8e8e8; --text:#2f2f2f; --muted:#6d6d6d; font-family:Inter,"Segoe UI",system-ui,sans-serif; }
+    * { box-sizing:border-box; }
+    html,body { width:100%; height:100%; margin:0; overflow:hidden; color:var(--text); background:linear-gradient(180deg,var(--orange),var(--orange-deep)); }
+    .app-shell { width:100vw; height:100vh; padding:1rem; }
+    .app { width:100%; height:100%; background:#fff; border-radius:24px; border:1px solid rgba(255,255,255,.45); padding:1rem .8rem; display:grid; min-height:0; overflow:hidden; }
+    .screen { display:none; width:100%; height:100%; min-height:0; }
+    .screen.active { display:grid; }
+    .home { place-items:center; text-align:center; align-content:center; gap:1rem; }
+    .logo-home { width:min(420px,62vw); }
+    h1 { margin:0; font-size:clamp(1.5rem,2.6vw,2.2rem); }
+    .home-actions { width:min(420px,78vw); display:grid; gap:.85rem; }
+    .btn { border:1px solid transparent; border-radius:999px; background:var(--orange); color:#fff; font-weight:700; font-size:1rem; padding:.92rem 1.2rem; min-height:48px; min-width:180px; cursor:pointer; transition:transform .12s ease, box-shadow .12s ease, filter .12s ease; }
+    .btn:hover { transform:translateY(-1px) scale(1.02); box-shadow:0 6px 14px rgba(0,0,0,.12); }
+    .btn:active { transform:translateY(0) scale(.995); }
+    .btn:disabled { opacity:.55; cursor:not-allowed; }
+    .btn.secondary { background:#fff; color:#4f4f4f; border-color:#e3e3e3; }
+    .upload-layout { place-items:center; }
+    .workspace-layout { align-content:stretch; }
+    .card { width:min(720px,96%); background:#fff; border:1px solid var(--line); border-radius:20px; padding:1rem; display:grid; gap:.9rem; }
+    .drop-zone { border:2px dashed #d6d6d6; border-radius:14px; min-height:190px; display:grid; place-items:center; text-align:center; color:var(--muted); cursor:pointer; padding:.8rem; background:#fafafa; }
+    .drop-zone.dragging { border-color:var(--orange); background:#fff4eb; }
+    .upload-actions { display:flex; justify-content:center; gap:.75rem; flex-wrap:wrap; }
+    .meta { min-height:1.2rem; text-align:center; color:var(--muted); font-weight:600; font-size:.92rem; }
+    .workspace-wrap { width:min(1520px,100%); margin:0 auto; height:100%; display:grid; grid-template-rows:auto auto minmax(0,1fr); gap:.85rem; min-height:0; overflow:hidden; }
+    .top-row { display:grid; grid-template-columns:220px repeat(2,minmax(180px,1fr)) 340px; gap:.8rem; }
+    .box { background:#fff; border:1px solid var(--line); border-radius:16px; padding:.8rem; display:grid; place-items:center; text-align:center; font-weight:700; }
+    .logo-box img { width:128px; max-width:100%; }
+    .metric-label { font-size:.72rem; color:var(--muted); text-transform:uppercase; letter-spacing:.06em; margin-bottom:.25rem; }
+    .metric-value { font-size:1.15rem; }
+    .metric-sub { font-size:.82rem; color:var(--muted); margin-top:.18rem; }
+    .metric-btn { cursor:pointer; transition:transform .12s ease, box-shadow .12s ease, border-color .12s ease; }
+    .metric-btn:hover { transform:translateY(-1px) scale(1.01); box-shadow:0 7px 16px rgba(0,0,0,.08); border-color:#f0c9a8; }
+    .metric-btn:active { transform:translateY(0) scale(.997); }
+    .metric-positive { color:#1f9d5a; }
+    .metric-negative { color:#cf3b2f; }
+    .placeholder-grid { width:100%; display:grid; grid-template-columns:1fr 1fr; gap:.55rem; }
+    .placeholder-btn { border:1px solid #ebebeb; border-radius:12px; background:#fbfbfb; color:#707070; font-weight:700; padding:.62rem; cursor:pointer; transition:transform .12s ease, box-shadow .12s ease, filter .12s ease; }
+    .placeholder-btn:hover { transform:translateY(-1px) scale(1.02); box-shadow:0 5px 12px rgba(0,0,0,.10); }
+    .placeholder-btn:active { transform:translateY(0) scale(.995); }
+    .control-row { display:grid; grid-template-columns:minmax(260px,420px) auto; gap:.8rem; align-items:center; }
+    .dept-actions { display:grid; grid-template-columns:1fr auto; gap:.5rem; align-items:center; }
+    .combo-btn { height:44px; border:1px solid #e6d3c2; border-radius:12px; background:#fff8f1; color:#6a3d1d; font-weight:800; padding:0 .8rem; cursor:pointer; min-width:170px; }
+    .combo-btn.active { background:#f29a45; color:#fff; border-color:#f29a45; }
+    select { width:100%; height:44px; border:1px solid var(--line); border-radius:12px; padding:0 .8rem; font-size:.95rem; background:#fff; color:var(--text); }
+    .tabs { display:flex; gap:.5rem; flex-wrap:wrap; }
+    .tab-btn { border:1px solid #e5e5e5; background:#fff; border-radius:999px; padding:.55rem .9rem; font-weight:700; cursor:pointer; color:#5b5b5b; transition:transform .12s ease, box-shadow .12s ease; }
+    .tab-btn:hover { transform:translateY(-1px); box-shadow:0 4px 10px rgba(0,0,0,.08); }
+    .tab-btn.active { background:var(--orange); border-color:var(--orange); color:#fff; }
+    .section-toggle-btn { margin-left:auto; width:44px; height:44px; border:1px solid #e7d4c4; background:#fff7ef; color:#704224; border-radius:12px; font-weight:900; font-size:1.1rem; cursor:pointer; }
+    .section-toggle-btn.enabled { background:#f29a45; border-color:#f29a45; color:#fff; }
+    .content-row { display:grid; grid-template-columns:minmax(0,1.7fr) minmax(420px,.95fr); gap:.85rem; min-height:0; }
+    .content-row.all-mode { grid-template-columns:minmax(0,1fr); }
+    .table-wrap { border:1px solid var(--line); border-radius:14px; background:#fff; min-height:0; max-height:100%; overflow-y:auto; overflow-x:hidden; }
+        .inline-btn { border:1px solid #e4e4e4; background:#fff; border-radius:999px; padding:.25rem .6rem; font-weight:700; cursor:pointer; }
+    .inline-btn.danger { color:#b03a2e; border-color:#f0cfc9; background:#fff8f7; }
+    .inline-btn.small { padding:.15rem .45rem; min-width:28px; }
+    .editor-panel.roster-mode .editor-controls { display:none; }
+    .roster-edit-panel { border:1px solid var(--line); border-radius:14px; padding:.65rem; display:none; gap:.45rem; }
+    .editor-panel.roster-mode .roster-edit-panel { display:none; }
+    .roster-edit-panel input { height:44px; border:1px solid var(--line); border-radius:10px; padding:0 .6rem; font-weight:700; }
+    .editor-panel.roster-mode .editor-card .k { color:#5f5f5f; }
+    .card-proposal { position:relative; }
+    .roster-stepper { position:absolute; top:8px; right:8px; display:none; gap:.3rem; }
+    .editor-panel.roster-mode .roster-stepper { display:grid; }
+    .roster-stepper button { width:26px; height:24px; border:1px solid #d9d0c8; background:#fff8f1; border-radius:8px; font-weight:900; line-height:1; cursor:pointer; color:#6b3f1f; display:grid; place-items:center; padding:0; font-size:12px; }
+    .roster-stepper button:hover { background:#fcead7; transform:translateY(-1px); }
+    .roster-add-modal { position:fixed; inset:0; background:rgba(20,15,10,.35); display:none; place-items:center; z-index:30; padding:1rem; }
+    .roster-add-modal.open { display:grid; }
+    .roster-add-panel { width:min(560px,96vw); border:1px solid var(--line); border-radius:16px; padding:.85rem; display:grid; gap:.6rem; background:#fff; }
+    .roster-add-grid { display:grid; grid-template-columns:1fr 1fr; gap:.45rem; }
+    .roster-add-grid .full { grid-column:1 / -1; }
+    .roster-add-grid input,.roster-add-grid select { height:40px; border:1px solid var(--line); border-radius:10px; padding:0 .55rem; font-weight:600; width:100%; }
+    .table-bottom-actions { display:flex; justify-content:flex-start; padding:.5rem; border-top:1px solid #f0f0f0; gap:.45rem; flex-wrap:wrap; }
+    .table-bottom-actions .inline-btn { white-space:nowrap; }
+    .editor-panel { border:1px solid var(--line); border-radius:14px; background:#fff; padding:.8rem; display:grid; grid-template-rows:auto auto auto auto 1fr; gap:.7rem; min-height:0; overflow:auto; }
+    .editor-title { margin:0; font-size:1.3rem; font-weight:800; line-height:1.2; }
+    .editor-subtitle { margin:0; color:#5f5f5f; font-weight:700; }
+    .editor-cards { display:grid; grid-template-columns:1fr 1fr; gap:.6rem; }
+    .editor-card { border:1px solid var(--line); border-radius:14px; padding:.7rem .75rem; }
+    .editor-card .k { color:#de7d30; font-weight:700; font-size:.9rem; margin-bottom:.15rem; }
+    .editor-card .v { font-size:1.8rem; font-weight:800; line-height:1.05; }
+    .editor-controls { border:1px solid var(--line); border-radius:14px; padding:.65rem; display:grid; gap:.55rem; }
+    .editor-control-row { display:grid; grid-template-columns:1fr auto; align-items:center; gap:.5rem; }
+    .editor-control-row .chip { border:1px solid var(--line); border-radius:999px; padding:.35rem .65rem; font-weight:700; background:#fff; }
+    .editor-slider { width:100%; accent-color:#8b8b8b; }
+    .editor-panel.is-increase .editor-slider { accent-color:#1f9d5a; }
+    .editor-panel.is-decrease .editor-slider { accent-color:#cf3b2f; }
+    .editor-inputs { display:grid; grid-template-columns:1fr 1fr; gap:.55rem; }
+    .input-wrap { position:relative; }
+    .editor-inputs input { width:100%; height:48px; border:1px solid var(--line); border-radius:14px; padding:0 .75rem; font-size:1rem; font-weight:700; }
+    .input-wrap.has-prefix input { padding-left:1.45rem; }
+    .input-wrap.has-suffix input { padding-right:1.6rem; }
+    .input-affix { position:absolute; top:50%; transform:translateY(-50%); color:#676767; font-weight:800; font-size:.95rem; pointer-events:none; }
+    .input-affix.prefix { left:.6rem; }
+    .input-affix.suffix { right:.65rem; }
+    .editor-note { border:1px solid var(--line); border-radius:14px; min-height:100px; padding:.65rem .75rem; resize:vertical; font-size:.95rem; }
+    .editor-empty { color:var(--muted); font-weight:600; display:grid; place-items:center; text-align:center; border:1px dashed #ddd; border-radius:14px; min-height:150px; }
+    .action-btn { background:var(--orange); color:#fff; border-color:var(--orange); }
+    tr.clickable-row { cursor:pointer; }
+    tr.clickable-row.selected-row td { background:#fff8ef; }
+    tr.clickable-row.edited-up td { background:#ecfaef; }
+    tr.clickable-row.edited-down td { background:#fff0ef; }
+    tr.clickable-row.selected-row.edited-up td { background:#ddf3e2; }
+    tr.clickable-row.selected-row.edited-down td { background:#ffe1de; }
+    tr.custom-row td { background:#efe8ff; }
+    tr.custom-row.selected-row td { background:#e2d6ff; }
+    .section-label { margin:0 0 .45rem; font-size:1.02rem; font-weight:700; color:#3b3b3b; }
+    .section-title { margin:0 0 .35rem; font-size:1.05rem; font-weight:800; color:#1f1f1f; }
+    .lock-pill { display:inline-flex; align-items:center; gap:.35rem; border:1px solid #e2d5c5; background:#fff8f1; color:#704224; border-radius:999px; font-weight:700; font-size:.84rem; padding:.22rem .55rem; }
+    .desc-line-main { font-weight:700; }
+    .desc-line-sub { display:block; padding-left:1.1rem; margin-top:.08rem; }
+    table { width:100%; border-collapse:collapse; min-width:0; table-layout:auto; }
+    th,td { text-align:left; padding:.62rem .7rem; border-bottom:1px solid #f0f0f0; font-size:.9rem; vertical-align:top; word-break:break-word; overflow-wrap:anywhere; }
+    th { white-space:normal; }
+    th { position:sticky; top:0; background:#f8f8f8; z-index:2; }
+    .th-main,.th-sub { display:block; text-align:center; }
+    .th-sub { font-size:.82em; color:#4f4f4f; margin-top:.05rem; }
+    .budget-table th:nth-child(n+4) { text-align:center; }
+    td.parent-row { font-weight:700; }
+    tr.total-row td { font-weight:700; background:#fcfcfc; }
+    tfoot td { font-weight:700; background:#fcfcfc; border-top:2px solid #e7e7e7; position:sticky; bottom:0; z-index:1; }
+    .about-modal { position:fixed; inset:0; background:rgba(20,15,10,.35); display:none; place-items:center; padding:1rem; z-index:20; }
+    .about-modal.open { display:grid; }
+    .about-card { width:min(760px,96vw); max-height:min(86vh,860px); overflow:auto; background:#fff; border:1px solid var(--line); border-radius:20px; padding:1.1rem; display:grid; gap:.7rem; line-height:1.45; }
+    .about-card h2,.about-card h3,.about-card p { margin:0; }
+    .about-card h3 { font-size:1rem; }
+    .chart-modal { position:fixed; inset:0; background:rgba(20,15,10,.42); display:none; place-items:center; padding:1rem; z-index:35; }
+    .chart-modal.open { display:grid; }
+    .chart-card { width:min(640px,96vw); background:#fff; border:1px solid var(--line); border-radius:18px; padding:1rem; display:grid; gap:.7rem; }
+    .chart-head { display:flex; justify-content:space-between; align-items:center; gap:.75rem; }
+    .chart-head h3 { margin:0; }
+    .chart-sub { color:var(--muted); font-size:.92rem; }
+    .chart-wrap { display:grid; grid-template-columns:minmax(220px,1fr) minmax(190px,.9fr); gap:.8rem; align-items:center; }
+    .chart-canvas { width:100%; aspect-ratio:1 / 1; max-height:340px; border-radius:14px; background:radial-gradient(circle at 30% 20%, #fff8ef 0%, #ffffff 55%); animation:pulseGlow 2.6s ease-in-out infinite; }
+    @keyframes pulseGlow { 0%,100% { box-shadow:0 0 0 0 rgba(242,154,69,.18);} 50% { box-shadow:0 0 18px 3px rgba(242,154,69,.28);} }
+    .table-wrap.all-mode { overflow:hidden; }
+    .all-layout { display:grid; grid-template-columns:minmax(520px,1.25fr) minmax(620px,1fr); gap:.9rem; height:100%; align-items:stretch; }
+    .all-list { border:1px solid var(--line); border-radius:12px; overflow:hidden; background:#fff; overscroll-behavior:contain; }
+    .all-side { border:1px solid var(--line); border-radius:12px; padding:.7rem; background:#fff; display:grid; gap:.6rem; grid-template-rows:auto 1fr; }
+    .all-visuals { display:grid; grid-template-columns:1fr; gap:.7rem; align-items:stretch; }
+    .viz-card { border:1px solid #eee6dc; border-radius:12px; padding:.55rem; background:#fffcf7; display:grid; gap:.45rem; }
+    .viz-card .section-label { text-align:center; margin:0; }
+     .all-list-head { display:flex; justify-content:space-between; align-items:center; gap:.6rem; padding:.45rem .55rem; border-bottom:1px solid #eee; position:sticky; top:0; background:#fff; z-index:3; }
+    .all-list-head .section-label { margin:0; font-size:.95rem; }
+    .all-controls { display:flex; justify-content:flex-end; gap:.5rem; }
+    .all-controls select { width:160px; height:34px; font-size:.85rem; }
+    .slice-pop { position:fixed; inset:0; background:rgba(38,24,14,.44); display:none; place-items:center; z-index:45; backdrop-filter:blur(1px); }
+    .slice-pop.open { display:grid; }
+    .slice-pop-card { width:min(460px,94vw); background:linear-gradient(180deg,#fffdf9,#fff); border:1px solid #efddca; border-radius:16px; padding:1rem; display:grid; gap:.6rem; box-shadow:0 22px 48px rgba(56,28,9,.22); }
+    .slice-pop-card .section-label { color:#5a3418; }
+    .slice-pop-grid { display:grid; grid-template-columns:repeat(2,minmax(0,1fr)); gap:.45rem .8rem; font-size:.93rem; }
+    .slice-pop-grid div { background:#fff7ee; border:1px solid #f2dfcc; border-radius:10px; padding:.45rem .5rem; }
+    .division-bubble { display:inline-block; width:10px; height:10px; border-radius:50%; margin-right:.45rem; vertical-align:middle; }
+    .pie-hover-tip { position:absolute; pointer-events:none; background:#fffdf8; border:1px solid #e8d8c6; border-radius:10px; padding:.45rem .55rem; box-shadow:0 8px 20px rgba(0,0,0,.12); font-size:.84rem; display:none; z-index:5; }
+
+    .chart-legend { display:grid; gap:.45rem; }
+    .legend-item { display:grid; grid-template-columns:auto 1fr auto; align-items:center; gap:.45rem; font-size:.92rem; }
+    .legend-swatch { width:12px; height:12px; border-radius:50%; box-shadow:0 0 0 2px rgba(0,0,0,.04); }
+
+    .budget-table th:nth-child(1), .budget-table td:nth-child(1) { width:86px; }
+    .budget-table th:nth-child(2), .budget-table td:nth-child(2) { width:86px; }
+    .budget-table th:nth-child(1), .budget-table th:nth-child(2) { text-align:left; white-space:nowrap; }
+    .budget-table th:nth-child(3), .budget-table td:nth-child(3) { min-width:230px; width:33%; }
+    .budget-table th:nth-child(4), .budget-table td:nth-child(4),
+    .budget-table th:nth-child(5), .budget-table td:nth-child(5),
+    .budget-table th:nth-child(6), .budget-table td:nth-child(6) { width:110px; }
+    .budget-table th:nth-child(7), .budget-table td:nth-child(7) { width:130px; }
+
+    .divisions-table { table-layout:auto; min-width:760px; }
+    .divisions-table th, .divisions-table td { word-break:normal; overflow-wrap:normal; }
+    .divisions-table th:nth-child(1), .divisions-table td:nth-child(1) { width:56%; white-space:nowrap; }
+    .divisions-table th:nth-child(2), .divisions-table td:nth-child(2),
+    .divisions-table th:nth-child(3), .divisions-table td:nth-child(3),
+    .divisions-table th:nth-child(4), .divisions-table td:nth-child(4) { width:19%; text-align:center; white-space:nowrap; }
+    .divisions-table th, .divisions-table td { padding:.42rem .45rem; }
+    .divisions-table td { font-size:.9rem; }
+    .divisions-table td:nth-child(1) { font-weight:600; }
+
+    .roster-table { table-layout:fixed; }
+    .roster-table th,.roster-table td { word-break:normal; overflow-wrap:normal; }
+    .roster-table th:nth-child(1), .roster-table td:nth-child(1) { width:42%; }
+    .roster-table th:nth-child(2), .roster-table td:nth-child(2) { width:16%; }
+    .roster-table th:nth-child(3), .roster-table td:nth-child(3),
+    .roster-table th:nth-child(4), .roster-table td:nth-child(4),
+    .roster-table th:nth-child(5), .roster-table td:nth-child(5),
+    .roster-table th:nth-child(6), .roster-table td:nth-child(6) { width:9%; white-space:nowrap; }
+    .roster-table th:nth-child(7), .roster-table td:nth-child(7) { width:15%; white-space:nowrap; }
+    @media (max-width:1120px){ .top-row{grid-template-columns:1fr 1fr;} .logo-box,.actions-box{grid-column:span 2;} .control-row{grid-template-columns:1fr;} .content-row{grid-template-columns:1fr;} .editor-cards,.editor-inputs{grid-template-columns:1fr;} .chart-wrap{grid-template-columns:1fr;} .all-layout{grid-template-columns:1fr;} .all-visuals{grid-template-columns:1fr;} .app{padding:.8rem;} }
+  </style>
+</head>
+<body>
+  <div class="app-shell">
+    <div class="app">
+      <section id="homeScreen" class="screen home active">
+        <img class="logo-home" src="https://www.altamonte.org/ImageRepository/Document?documentID=6141" alt="City logo" />
+        <h1>Leisure Services Budget Tool</h1>
+        <div class="home-actions">
+          <button id="startBtn" class="btn">Start</button>
+          <button id="aboutBtn" class="btn secondary">About</button>
+        </div>
+      </section>
+
+      <section id="uploadScreen" class="screen upload-layout">
+        <div class="card">
+          <div id="dropZone" class="drop-zone" role="button" tabindex="0" aria-label="Drop spreadsheet here">
+            <span>Drag and drop spreadsheet</span>
+            <input id="fileInput" type="file" accept=".xlsx,.xlsm,.xls" hidden />
+          </div>
+          <div class="upload-actions">
+            <button id="pickBtn" class="btn secondary" type="button">Select File</button>
+            <button id="nextBtn" class="btn" type="button" disabled>Next</button>
+          </div>
+          <div id="fileMeta" class="meta"></div>
+          <div class="upload-actions"><button id="homeFromUploadBtn" class="btn secondary" type="button">Home</button></div>
+        </div>
+      </section>
+
+      <section id="workspaceScreen" class="screen workspace-layout">
+        <div class="workspace-wrap">
+          <div class="top-row">
+            <div class="box logo-box"><img src="https://www.altamonte.org/ImageRepository/Document?documentID=6141" alt="Altamonte Springs logo" /></div>
+            <button id="totalBudgetBtn" class="box metric-btn" type="button" title="View budget breakdown chart">
+              <div>
+                <div class="metric-label">Total Budget</div>
+                <div id="totalBudgetValue" class="metric-value">$0.00</div>
+                <div id="totalBudgetSub" class="metric-sub">Personnel + Operating</div>
+              </div>
+            </button>
+            <div class="box"><div><div class="metric-label">% Change</div><div id="budgetChangeValue" class="metric-value">0.00%</div></div></div>
+            <div class="box actions-box"><div class="placeholder-grid"><button id="exportBtn" class="placeholder-btn action-btn" type="button" disabled>Export</button><button class="placeholder-btn" type="button">Action 2</button><button class="placeholder-btn" type="button">Action 3</button><button class="placeholder-btn" type="button">Action 4</button></div></div>
+          </div>
+
+          <div class="control-row">
+            <div class="dept-actions"><select id="departmentSelect" aria-label="Department"></select><button id="comboViewBtn" class="combo-btn" type="button" style="display:none">Services View: Off</button></div>
+            <div class="tabs" role="tablist" aria-label="Sections">
+              <button class="tab-btn active" data-section="personnel" type="button">Personnel Services</button>
+              <button class="tab-btn" data-section="roster" type="button">Position Roster</button>
+              <button class="tab-btn" data-section="operating" type="button">Operating Expenditures</button>
+              <button id="sectionEditToggleBtn" class="section-toggle-btn" type="button" aria-label="Toggle section editing" title="Section editing locked">🔒</button>
+            </div>
+          </div>
+
+          <div class="content-row">
+            <div id="dataRegion" class="table-wrap"></div>
+            <aside id="editorPanel" class="editor-panel" aria-label="Budget adjustment panel">
+              <h2 id="editorTitle" class="editor-title">Select a line item</h2>
+              <p id="editorSubtitle" class="editor-subtitle">Click any editable row to adjust 2027 proposal.</p>
+              <div class="editor-cards">
+                <div class="editor-card"><div id="adoptedLabel" class="k">2026 Adopted</div><div id="adoptedValue" class="v">$0</div></div>
+                <div class="editor-card card-proposal"><div id="proposalLabel" class="k">2027 Proposal</div><div id="proposalValue" class="v">$0</div><div id="rosterStepper" class="roster-stepper"><button id="rosterStepUp" type="button" aria-label="Increase 2027 count">▲</button><button id="rosterStepDown" type="button" aria-label="Decrease 2027 count">▼</button></div></div>
+              </div>
+              <div class="editor-controls">
+                <div class="editor-control-row"><span class="chip">Change</span><div style="display:flex;gap:.45rem"><button id="resetLineBtn" class="placeholder-btn" type="button" disabled>Revert</button><button id="deleteCustomAcctBtn" class="placeholder-btn" type="button" style="display:none">Delete Added Line</button></div></div>
+                <input id="proposalSlider" class="editor-slider" type="range" min="-100" max="100" step="0.1" value="0" />
+                <div class="editor-inputs">
+                  <label class="input-wrap has-prefix"><span id="amountSign" class="input-affix prefix">±</span><input id="amountInput" type="number" step="0.01" placeholder="0.00" /></label>
+                  <label class="input-wrap has-suffix"><input id="percentInput" type="number" step="0.01" placeholder="0.00" /><span class="input-affix suffix">%</span></label>
+                </div>
+              </div>
+              <div id="rosterEditPanel" class="roster-edit-panel"></div>
+              <textarea id="noteInput" class="editor-note" placeholder="Note"></textarea>
+              <div id="editorEmpty" class="editor-empty">No position selected.</div>
+            </aside>
+          </div>
+        </div>
+      </section>
+    </div>
+  </div>
+
+  <div id="rosterAddModal" class="roster-add-modal" role="dialog" aria-modal="true" aria-label="Add Position">
+    <div id="rosterAddPanel" class="roster-add-panel">
+      <div class="section-label">Add Position</div>
+      <div class="roster-add-grid">
+        <input id="newPosTitle" class="full" type="text" placeholder="Position title" />
+        <input id="newPosGrade" type="text" placeholder="Grade" />
+        <select id="newPosBucket" aria-label="Position type">
+          <option value="full-time">Full-Time Employees</option>
+          <option value="part-time">Part-Time Employees</option>
+        </select>
+        <input id="newPosCount" type="number" step="1" min="0" placeholder="2027 Count" />
+        <button id="addPosBtn" class="inline-btn" type="button">Add</button>
+      </div>
+      <div style="display:flex;justify-content:flex-end"><button id="closeAddPosBtn" class="btn secondary" type="button">Close</button></div>
+    </div>
+  </div>
+
+  <div id="accountAddModal" class="roster-add-modal" role="dialog" aria-modal="true" aria-label="Add Account Line">
+    <div id="accountAddPanel" class="roster-add-panel">
+      <div class="section-label">Add Account Line</div>
+      <div class="roster-add-grid">
+        <select id="newAcctType" class="full" aria-label="Account line type">
+          <option value="budget">New Budget Line</option>
+          <option value="subproject">Sub Account / Project</option>
+        </select>
+        <input id="newAcctObj" type="text" placeholder="Obj (optional)" />
+        <input id="newAcctProj" type="text" placeholder="Proj (optional)" />
+        <select id="newAcctParent" class="full" aria-label="Parent account for sub account" style="display:none">
+          <option value="">Parent account (required for sub account)</option>
+        </select>
+        <input id="newAcctDesc" class="full" type="text" placeholder="Line description" />
+        <input id="newAcctAmount" type="number" step="0.01" placeholder="2027 Amount" />
+        <button id="addAcctBtn" class="inline-btn" type="button">Add</button>
+      </div>
+      <div style="display:flex;justify-content:flex-end"><button id="closeAddAcctBtn" class="btn secondary" type="button">Close</button></div>
+    </div>
+  </div>
+
+  <div id="allAccountsModal" class="chart-modal" role="dialog" aria-modal="true" aria-label="All accounts chart">
+    <div class="chart-card">
+      <div class="chart-head">
+        <div>
+          <h3 id="allAccountsTitle">All Accounts Breakdown</h3>
+          <div id="allAccountsMeta" class="chart-sub">Top account slices</div>
+        </div>
+        <button id="allAccountsClose" class="btn secondary" type="button">Close</button>
+      </div>
+      <div class="chart-wrap">
+        <canvas id="allAccountsCanvas" class="chart-canvas" width="420" height="420" aria-label="All accounts pie chart"></canvas>
+        <div id="allAccountsLegend" class="chart-legend"></div>
+      </div>
+    </div>
+  </div>
+
+  <div id="budgetChartModal" class="chart-modal" role="dialog" aria-modal="true" aria-label="Budget breakdown chart">
+    <div id="budgetChartCard" class="chart-card">
+      <div class="chart-head">
+        <div>
+          <h3 id="budgetChartTitle">Budget Breakdown</h3>
+          <div id="budgetChartMeta" class="chart-sub">Personnel vs Operating</div>
+        </div>
+        <button id="budgetChartClose" class="btn secondary" type="button">Close</button>
+      </div>
+      <div class="chart-wrap">
+        <canvas id="budgetChartCanvas" class="chart-canvas" width="420" height="420" aria-label="Budget pie chart"></canvas>
+        <div id="budgetChartLegend" class="chart-legend"></div>
+      </div>
+    </div>
+  </div>
+
+  <div id="sliceInfoModal" class="slice-pop" role="dialog" aria-modal="true" aria-label="Division yearly totals">
+    <div class="slice-pop-card">
+      <div style="display:flex;justify-content:space-between;align-items:center;gap:.6rem">
+        <div id="sliceInfoTitle" class="section-label" style="margin:0">Division</div>
+        <button id="sliceInfoClose" class="btn secondary" type="button">Close</button>
+      </div>
+      <div id="sliceInfoGrid" class="slice-pop-grid"></div>
+    </div>
+  </div>
+
+  <div id="aboutModal" class="about-modal" role="dialog" aria-modal="true" aria-label="About">
+    <div class="about-card">
+      <h2>About</h2>
+      <p>Altamonte Springs Budget Tool is a browser-based budget review workspace designed for Leisure Services. It allows teams to load City workbook pages, compare prior years, test 2027 proposal updates line-by-line, and export clean PDF or Excel outputs for discussion and documentation.</p>
+      <h3>Credit</h3><p>Developed by Robert McDaniel.</p>
+      <h3>Disclaimer</h3>
+      <p>Portions of this HTML code were created with the assistance of artificial intelligence tools, including ChatGPT. As with any AI-generated code, it may contain errors, bugs, or unintended behavior. This tool is provided for convenience and reference purposes only. Robert McDaniel assumes no responsibility or liability for any issues, inaccuracies, data loss, or damages that may result from its use.</p>
+      <button id="closeAboutBtn" class="btn secondary" type="button">Close</button>
+    </div>
+  </div>
+
+  <script src="https://cdn.jsdelivr.net/npm/xlsx@0.18.5/dist/xlsx.full.min.js"></script>
+  <script src="https://cdn.jsdelivr.net/npm/jszip@3.10.1/dist/jszip.min.js"></script>
+  <script>
+    const EXCLUDED_SHEETS = new Set(['011 Tree Bank Fund', '315 Rec Impact']);
+    const ALLOWED_COLS = [0, 2, 3, 6, 8, 10, 12]; // A, C, D, G, I, K, M
+    const VALUE_COLS = [6, 8, 10, 12]; // G, I, K, M
+    const COL = { A: 0, C: 2, D: 3, G: 6, I: 8, K: 10, M: 12, R: 17 };
+    const SECTION_KEYS = {
+      'PERSONNEL SERVICES': 'personnel',
+      'POSITION ROSTER': 'roster',
+      'OPERATING EXPENDITURES': 'operating'
+    };
+
+    const $ = (id) => document.getElementById(id);
+    const el = {
+      home: $('homeScreen'), upload: $('uploadScreen'), workspace: $('workspaceScreen'),
+      start: $('startBtn'), about: $('aboutBtn'), closeAbout: $('closeAboutBtn'), modal: $('aboutModal'), homeUpload: $('homeFromUploadBtn'),
+      dropZone: $('dropZone'), fileInput: $('fileInput'), pickBtn: $('pickBtn'), nextBtn: $('nextBtn'), fileMeta: $('fileMeta'), exportBtn: $('exportBtn'),
+      deptSelect: $('departmentSelect'), comboViewBtn: $('comboViewBtn'), sectionEditToggleBtn: $('sectionEditToggleBtn'), dataRegion: $('dataRegion'), contentRow: document.querySelector('.content-row'), tabBtns: [...document.querySelectorAll('.tab-btn')], tabsWrap: document.querySelector('.tabs'),
+      editorPanel: $('editorPanel'), editorTitle: $('editorTitle'), editorSubtitle: $('editorSubtitle'), adoptedLabel: $('adoptedLabel'), proposalLabel: $('proposalLabel'), adoptedValue: $('adoptedValue'), proposalValue: $('proposalValue'),
+      proposalSlider: $('proposalSlider'), amountInput: $('amountInput'), amountSign: $('amountSign'), percentInput: $('percentInput'), rosterCountInput: $('rosterCountInput'), noteInput: $('noteInput'), editorEmpty: $('editorEmpty'), resetLineBtn: $('resetLineBtn'), deleteCustomAcctBtn: $('deleteCustomAcctBtn'), rosterStepper: $('rosterStepper'), rosterStepUp: $('rosterStepUp'), rosterStepDown: $('rosterStepDown'),
+      totalBudgetBtn: $('totalBudgetBtn'), totalBudgetValue: $('totalBudgetValue'), totalBudgetSub: $('totalBudgetSub'), budgetChangeValue: $('budgetChangeValue'),
+      budgetChartModal: $('budgetChartModal'), budgetChartClose: $('budgetChartClose'), budgetChartCanvas: $('budgetChartCanvas'), budgetChartLegend: $('budgetChartLegend'), budgetChartTitle: $('budgetChartTitle'), budgetChartMeta: $('budgetChartMeta'),
+      allAccountsModal: $('allAccountsModal'), allAccountsClose: $('allAccountsClose'), allAccountsCanvas: $('allAccountsCanvas'), allAccountsLegend: $('allAccountsLegend'), allAccountsTitle: $('allAccountsTitle'), allAccountsMeta: $('allAccountsMeta'), sliceInfoModal: $('sliceInfoModal'), sliceInfoClose: $('sliceInfoClose'), sliceInfoTitle: $('sliceInfoTitle'), sliceInfoGrid: $('sliceInfoGrid'),
+      rosterEditPanel: $('rosterEditPanel'), rosterAddModal: $('rosterAddModal'), rosterAddPanel: $('rosterAddPanel'), closeAddPosBtn: $('closeAddPosBtn'), newPosTitle: $('newPosTitle'), newPosGrade: $('newPosGrade'), newPosBucket: $('newPosBucket'), newPosCount: $('newPosCount'), addPosBtn: $('addPosBtn'),
+      accountAddModal: $('accountAddModal'), accountAddPanel: $('accountAddPanel'), closeAddAcctBtn: $('closeAddAcctBtn'), newAcctType: $('newAcctType'), newAcctParent: $('newAcctParent'), newAcctObj: $('newAcctObj'), newAcctProj: $('newAcctProj'), newAcctDesc: $('newAcctDesc'), newAcctAmount: $('newAcctAmount'), addAcctBtn: $('addAcctBtn')
+    };
+
+    let selectedFile = null;
+    let departments = [];
+    let specialFunds = { recimpact: null, treebank: null };
+    let activeSection = 'personnel';
+    let selectedItem = null;
+    let customRosterCounter = 1;
+    let customAccountCounter = 1;
+    const itemNotes = new Map();
+    const edited2027 = new Map();
+    let budgetChartHover = -1;
+    let divisionsPieHover = -1;
+    let allAccountsYear = "2027";
+    let allAccountsGrouped = false;
+    let divisionsPieSelected = -1;
+    const DIVISION_COLORS = ['#f29a45','#2f6fe4','#00a67a','#9a4dcc','#f0c84b','#008fb3','#d94f4f','#5c9a2e','#7a7a7a','#00c37a','#7b61ff','#d149a0'];
+    const sectionEditEnabled = { personnel: false, roster: false, operating: true };
+    const isSectionEditable = (section) => !!sectionEditEnabled[String(section || '')];
+
+    function parseSpecialFund(rawSheetName, sheet) {
+      const cleanSheetName = trimText(rawSheetName);
+      const rows = [];
+      const range = XLSX.utils.decode_range(sheet['!ref'] || 'A1:A1');
+      for (let r = 0; r <= range.e.r; r += 1) {
+        const desc = trimText(cellValue(sheet, COL.A, r));
+        const acct = trimText(cellValue(sheet, 1, r));
+        const proj = trimText(cellValue(sheet, 2, r));
+        const y2024 = parseNumeric(cellValue(sheet, COL.G, r));
+        const y2025 = parseNumeric(cellValue(sheet, COL.I, r));
+        const y2026Budget = parseNumeric(cellValue(sheet, COL.K, r));
+        const y2026Projected = parseNumeric(cellValue(sheet, 11, r));
+        const y2027 = parseNumeric(cellValue(sheet, COL.M, r));
+        const hasAnyValue = !!desc || !!acct || !!proj || y2024 !== null || y2025 !== null || y2026Budget !== null || y2026Projected !== null || y2027 !== null;
+        if (!hasAnyValue) continue;
+        if (/^city of altamonte springs, florida$/i.test(desc) || /^fiscal year/i.test(desc) || /^leisure and maintenance services department$/i.test(desc)) continue;
+        rows.push({
+          uid: `${cleanSheetName}:fund:${r}`,
+          description: desc,
+          acct,
+          proj,
+          y2024,
+          y2025,
+          y2026Budget,
+          y2026Projected,
+          y2027,
+          isTotal: /^total\b/i.test(desc)
+        });
+      }
+      return { sheetName: cleanSheetName, rows };
+    }
+
+    function updateSectionEditToggleButton() {
+      const btn = el.sectionEditToggleBtn;
+      if (!btn) return;
+      const selectVal = String(el.deptSelect?.value || '');
+      const isAll = selectVal === '__all__';
+      const isSpecial = selectVal === '__recimpact__' || selectVal === '__treebank__';
+      if (isAll || isSpecial) { btn.style.display = 'none'; return; }
+      btn.style.display = '';
+      const enabled = isSectionEditable(activeSection);
+      const pretty = activeSection === 'personnel' ? 'Personnel Services' : (activeSection === 'roster' ? 'Position Roster' : 'Operating Expenditures');
+      btn.textContent = enabled ? '🔓' : '🔒';
+      btn.classList.toggle('enabled', enabled);
+      btn.title = `${pretty} editing ${enabled ? 'enabled' : 'locked'}`;
+      btn.setAttribute('aria-label', `${pretty} editing ${enabled ? 'enabled' : 'locked'}`);
+    }
+
+    const buildExportFilename = (name) => {
+      const n = String(name || 'export.xlsx');
+      const i = n.lastIndexOf('.');
+      if (i <= 0) return `${n} - TEST`;
+      return `${n.slice(0, i)} - TEST${n.slice(i)}`;
+    };
+
+    const nextCustomRosterUid = (sheetName) => `${sheetName}:roster:custom:${customRosterCounter++}`;
+    const nextCustomAccountUid = (sheetName, section) => `${sheetName}:${section}:customacct:${customAccountCounter++}`;
+    const getCurrentDept = () => {
+      const v = String(el.deptSelect?.value ?? '');
+      if (v === '__all__' || v === '__recimpact__' || v === '__treebank__') return null;
+      return departments[Number(v) || 0] || null;
+    };
+
+    const show = (screen) => { [el.home, el.upload, el.workspace].forEach((s) => s.classList.remove('active')); screen.classList.add('active'); };
+    const trimText = (v) => String(v ?? '').replace(/\s+/g, ' ').trim();
+    function setAllAccountsModeUI(isAll) {
+      if (el.tabsWrap) el.tabsWrap.style.display = isAll ? 'none' : '';
+      if (el.editorPanel) el.editorPanel.style.display = isAll ? 'none' : '';
+      if (el.dataRegion) el.dataRegion.classList.toggle('all-mode', !!isAll);
+      if (el.contentRow) el.contentRow.classList.toggle('all-mode', !!isAll);
+      if (el.totalBudgetBtn) el.totalBudgetBtn.title = isAll ? 'All divisions chart is shown on the main screen' : 'View budget breakdown chart';
+      if (el.comboViewBtn) el.comboViewBtn.style.display = isAll ? '' : 'none';
+      if (el.sectionEditToggleBtn) el.sectionEditToggleBtn.style.display = isAll ? 'none' : '';
+    }
+
+    function setSpecialFundMode(isSpecial) {
+      if (el.tabsWrap) el.tabsWrap.style.display = isSpecial ? 'none' : '';
+      if (el.editorPanel) el.editorPanel.style.display = isSpecial ? 'none' : '';
+      if (el.contentRow) el.contentRow.classList.toggle('all-mode', !!isSpecial);
+      if (el.sectionEditToggleBtn) el.sectionEditToggleBtn.style.display = isSpecial ? 'none' : '';
+    }
+
+    const skipNoise = (t) => /(per\s*gl|\bdiff\b|difference|variance)/i.test(t);
+
+    const cellRef = (c, r) => XLSX.utils.encode_cell({ c, r });
+    const cellObj = (sheet, c, r) => sheet[cellRef(c, r)] || null;
+    const cellValue = (sheet, c, r) => cellObj(sheet, c, r)?.v ?? '';
+    const isBold = (sheet, c, r) => !!cellObj(sheet, c, r)?.s?.font?.bold;
+
+    const parseNumeric = (value) => {
+      if (value === null || value === undefined || value === '') return null;
+      if (typeof value === 'number') return Number.isFinite(value) ? value : null;
+      const raw = String(value).trim();
+      if (!raw || raw === '-') return null;
+      const isParen = raw.startsWith('(') && raw.endsWith(')');
+      const n = Number(raw.replace(/[$,%\s,()]/g, ''));
+      if (!Number.isFinite(n)) return null;
+      return isParen ? -n : n;
+    };
+
+    function detectSectionHeader(sheet, r) {
+      for (const c of [COL.A, COL.C, COL.D]) {
+        const t = trimText(cellValue(sheet, c, r)).toUpperCase();
+        if (SECTION_KEYS[t]) return SECTION_KEYS[t];
+      }
+      return null;
+    }
+
+    function detectDepartmentTitle(sheet, maxRow, fallback) {
+      const deptRow = trimText(cellValue(sheet, COL.A, 3));
+      const divisionRow = trimText(cellValue(sheet, COL.A, 4));
+      const fundRow = trimText(cellValue(sheet, COL.A, 5));
+      const fundCode = /\(([^)]+)\)/.exec(fundRow)?.[1] || '';
+
+      if (divisionRow) return trimText(fundCode ? `${divisionRow} (${fundCode})` : divisionRow);
+
+      const bad = /(city of|fiscal year|annual budget|general fund|department requested|actual|budget|commission)/i;
+      let best = '';
+      let score = -1;
+      for (let r = 0; r <= Math.min(maxRow, 40); r += 1) {
+        for (const c of ALLOWED_COLS) {
+          const t = trimText(cellValue(sheet, c, r));
+          if (!t || t.length < 4 || t.length > 90 || bad.test(t) || /^\d+$/.test(t)) continue;
+          if (SECTION_KEYS[t.toUpperCase()]) continue;
+          const isBoldTitle = isBold(sheet, c, r);
+          let s = t.length / 120;
+          if (/division|park|rangers|administration|lotus/i.test(t)) s += 6;
+          if (/department/i.test(t)) s -= 1.5;
+          if (isBoldTitle) s += 1.5;
+          if (c === COL.A || c === COL.C) s += 0.5;
+          if (s > score) { score = s; best = t; }
+        }
+      }
+      return trimText(best || divisionRow || deptRow || fallback);
+    }
+
+    const cleanDescription = (sheet, r) => trimText(String(cellValue(sheet, COL.A, r)).replace(/\r?\n+/g, ' '));
+    const displayDescription = (sheet, r) => String(cellValue(sheet, COL.A, r)).split(/\r?\n+/).map((part) => trimText(part)).filter(Boolean).join('\n');
+
+    function readYearValues(sheet, r) {
+      return {
+        y2024: parseNumeric(cellValue(sheet, COL.G, r)),
+        y2025: parseNumeric(cellValue(sheet, COL.I, r)),
+        y2026: parseNumeric(cellValue(sheet, COL.K, r)),
+        y2027: parseNumeric(cellValue(sheet, COL.M, r))
+      };
+    }
+
+    const allBlankOrZero = (vals) => Object.values(vals).every((v) => v === null || v === 0);
+    const anyNonBlankNonZero = (vals) => Object.values(vals).some((v) => v !== null && v !== 0);
+
+    function isHeaderLikeRow(desc, rowJoined) {
+      const d = desc.toLowerCase();
+      if (/^(2024 actual|2025 actual|2026 budget|2027 requested|2027 proposal)$/.test(d)) return true;
+      const tokens = ['actual', 'budget', 'requested', 'proposal', 'account', 'description'];
+      const count = tokens.reduce((n, t) => n + (rowJoined.includes(t) ? 1 : 0), 0);
+      return count >= 4;
+    }
+
+    const isNumericLikeText = (value) => {
+      const t = trimText(value);
+      return !!t && /^[-+]?\d[\d,]*(?:\.\d+)?$/.test(t);
+    };
+
+    const HEADER_ROW_MAX = 9; // Rows 1-10 are report metadata/header rows
+
+    const isGarbageLineDescription = (value) => {
+      const t = trimText(value);
+      if (!t) return true;
+      if (/^0+\s*$/.test(t)) return true;
+      if (/^[\dA-Z]{12,}$/i.test(t) && /\d{6,}/.test(t)) return true;
+      return false;
+    };
+
+    function hasRequiredRowData(sheet, r, vals, isBoldDesc = false) {
+      const c = trimText(cellValue(sheet, COL.C, r));
+      const d = trimText(cellValue(sheet, COL.D, r));
+      return Boolean(isBoldDesc || c || d || vals.y2024 !== null || vals.y2025 !== null || vals.y2026 !== null || vals.y2027 !== null);
+    }
+
+    function hasLikelyChildRowBelow(sheet, r, sectionEnd) {
+      for (let rr = r + 1; rr <= Math.min(sectionEnd, r + 3); rr += 1) {
+        const nextDesc = cleanDescription(sheet, rr);
+        if (!nextDesc || isGarbageLineDescription(nextDesc) || skipNoise(nextDesc) || /^total\b/i.test(nextDesc)) continue;
+        const nextObj = trimText(cellValue(sheet, COL.C, rr));
+        const nextProj = trimText(cellValue(sheet, COL.D, rr));
+        const nextRaw = String(cellValue(sheet, COL.A, rr) || '');
+        const nextHasIndent = /^\s+/.test(nextRaw);
+        return nextHasIndent || (!nextObj && !nextProj);
+      }
+      return false;
+    }
+
+    function parseSheet(rawSheetName, sheet) {
+      const cleanSheetName = trimText(rawSheetName);
+      const range = XLSX.utils.decode_range(sheet['!ref'] || 'A1:A1');
+      const departmentTitle = detectDepartmentTitle(sheet, range.e.r, cleanSheetName);
+
+      const sectionBounds = [];
+      let current = null;
+      for (let r = range.s.r; r <= range.e.r; r += 1) {
+        const sec = detectSectionHeader(sheet, r);
+        if (sec) {
+          if (current) current.end = r - 1;
+          current = { key: sec, start: r + 1, end: range.e.r };
+          sectionBounds.push(current);
+        }
+      }
+
+      const parsed = { personnel: [], roster: [], operating: [] };
+      const labels = { rosterTitle: '' };
+
+      sectionBounds.forEach((sec) => {
+        let currentCategory = null;
+        let previousType = null;
+        let currentRosterBucket = 'full-time';
+
+        for (let r = sec.start; r <= sec.end; r += 1) {
+          const desc = cleanDescription(sheet, r);
+          const descDisplay = displayDescription(sheet, r) || desc;
+          const joined = ALLOWED_COLS.map((c) => trimText(cellValue(sheet, c, r)).toLowerCase()).join(' ');
+          const vals = readYearValues(sheet, r);
+          const isBoldDesc = isBold(sheet, COL.A, r) || isBold(sheet, COL.D, r);
+
+          if (r <= HEADER_ROW_MAX) continue;
+          if (!desc || isNumericLikeText(desc) || isGarbageLineDescription(desc)) continue;
+          if (/per\s*gl|^diff\b/i.test(desc)) break;
+
+          const isTotalRow = /^total\b/i.test(desc) || /^total budget$/i.test(desc);
+          if (skipNoise(desc) && !isTotalRow) continue;
+          if (isHeaderLikeRow(desc, joined)) continue;
+
+          if (sec.key === 'roster' && /^(full[- ]?time employees|part[- ]?time employees)$/i.test(desc)) {
+            if (!labels.rosterTitle) labels.rosterTitle = desc;
+            currentRosterBucket = /part[- ]?time/i.test(desc) ? 'part-time' : 'full-time';
+            parsed.roster.push({
+              uid: `${cleanSheetName}:${sec.key}:${r}`,
+              sourceRow: r,
+              title: desc,
+              grade: '',
+              fy2024: null,
+              fy2025: null,
+              fy2026: null,
+              fy2027: null,
+              fy2027Original: null,
+              indentLevel: 1,
+              isParent: true,
+              isHeader: true,
+              isTotal: false,
+              isCustom: false,
+              rosterBucket: currentRosterBucket,
+              note: trimText(cellValue(sheet, COL.R, r) || '')
+            });
+            continue;
+          }
+
+          const allCaps = /[A-Z]/.test(desc) && desc === desc.toUpperCase();
+          if (!isTotalRow && allCaps && !anyNonBlankNonZero(vals) && !isBoldDesc) continue;
+          if (!isTotalRow && !hasRequiredRowData(sheet, r, vals, isBoldDesc)) continue;
+
+          if (sec.key === 'roster') {
+            const grade = trimText(cellValue(sheet, COL.C, r)) || trimText(cellValue(sheet, COL.D, r));
+            parsed.roster.push({
+              uid: `${cleanSheetName}:${sec.key}:${r}`,
+              sourceRow: r,
+              title: desc,
+              grade,
+              fy2024: vals.y2024,
+              fy2025: vals.y2025,
+              fy2026: vals.y2026,
+              fy2027: vals.y2027,
+              fy2027Original: vals.y2027,
+              indentLevel: isTotalRow ? 1 : 2,
+              isParent: false,
+              isHeader: false,
+              isTotal: isTotalRow,
+              isCustom: false,
+              rosterBucket: currentRosterBucket,
+              note: trimText(cellValue(sheet, COL.R, r) || '')
+            });
+            continue;
+          }
+
+          const obj = trimText(cellValue(sheet, COL.C, r));
+          const proj = trimText(cellValue(sheet, COL.D, r));
+          const categoryByBold = isBoldDesc;
+          const categoryByHeuristic = allBlankOrZero(vals) && !!desc;
+          const categoryByStructure = (obj || proj) && hasLikelyChildRowBelow(sheet, r, sec.end);
+          const isCategory = categoryByBold || categoryByHeuristic || categoryByStructure;
+
+          if (isCategory) {
+            currentCategory = desc;
+            previousType = 'category';
+            parsed[sec.key].push({
+              uid: `${cleanSheetName}:${sec.key}:${r}`,
+              sourceRow: r,
+              obj,
+              proj,
+              description: desc,
+              descriptionDisplay: descDisplay,
+              isParent: true,
+              indentLevel: 0,
+              y2024: vals.y2024,
+              y2025: vals.y2025,
+              y2026: vals.y2026,
+              y2027: vals.y2027,
+              y2027Original: vals.y2027,
+              isTotal: isTotalRow,
+              note: trimText(cellValue(sheet, COL.R, r) || '')
+            });
+            continue;
+          }
+
+          const isLineItem = anyNonBlankNonZero(vals) || !!obj || !!proj;
+          if (!isLineItem) continue;
+
+          const rawDesc = String(cellValue(sheet, COL.A, r) || '');
+          const hasLeadingIndent = /^\s+/.test(rawDesc);
+          const hasObjOrProj = !!obj || !!proj;
+          const underOpenCategory = !!currentCategory && !hasObjOrProj;
+          const isChild = hasLeadingIndent || underOpenCategory;
+
+          parsed[sec.key].push({
+            uid: `${cleanSheetName}:${sec.key}:${r}`,
+            sourceRow: r,
+            obj,
+            proj,
+            description: desc,
+            descriptionDisplay: descDisplay,
+            isParent: false,
+            indentLevel: isChild ? 1 : 0,
+            y2024: vals.y2024,
+            y2025: vals.y2025,
+            y2026: vals.y2026,
+            y2027: vals.y2027,
+            note: trimText(cellValue(sheet, COL.R, r) || '')
+          });
+          previousType = 'line';
+          if (hasObjOrProj && !isChild) currentCategory = null;
+        }
+      });
+
+      return {
+        rawSheetName,
+        sheetName: cleanSheetName,
+        departmentTitle,
+        displayName: `${trimText(departmentTitle)} (${cleanSheetName})`,
+        sections: parsed,
+        labels
+      };
+    }
+
+    async function parseWorkbook(file) {
+      const data = await file.arrayBuffer();
+      const wb = XLSX.read(data, { type: 'array', cellStyles: true });
+      const result = [];
+      specialFunds = { recimpact: null, treebank: null };
+      wb.SheetNames.forEach((rawName) => {
+        const cleanName = trimText(rawName);
+        const sheet = wb.Sheets[rawName];
+        if (!sheet) return;
+        if (cleanName === '315 Rec Impact') {
+          specialFunds.recimpact = parseSpecialFund(rawName, sheet);
+          return;
+        }
+        if (cleanName === '011 Tree Bank Fund') {
+          specialFunds.treebank = parseSpecialFund(rawName, sheet);
+          return;
+        }
+        if (EXCLUDED_SHEETS.has(cleanName)) return;
+        result.push(parseSheet(rawName, sheet));
+      });
+      return result;
+    }
+
+    function fillDepartmentOptions() {
+      el.deptSelect.innerHTML = '';
+      const allOpt = document.createElement('option');
+      allOpt.value = '__all__';
+      allOpt.textContent = 'All Accounts';
+      el.deptSelect.appendChild(allOpt);
+      const recOpt = document.createElement('option');
+      recOpt.value = '__recimpact__';
+      recOpt.textContent = '315 Rec Impact Fund';
+      el.deptSelect.appendChild(recOpt);
+      const treeOpt = document.createElement('option');
+      treeOpt.value = '__treebank__';
+      treeOpt.textContent = 'Tree Bank Fund';
+      el.deptSelect.appendChild(treeOpt);
+      departments.forEach((dept, idx) => {
+        const option = document.createElement('option');
+        option.value = String(idx);
+        option.textContent = trimText(dept.departmentTitle || dept.sheetName);
+        el.deptSelect.appendChild(option);
+      });
+    }
+
+    const fmt = (v) => (v === null || v === undefined ? '' : Number(v).toLocaleString(undefined, { maximumFractionDigits: 2 }));
+    const totalFor = (rows, key) => rows.reduce((sum, r) => (typeof r[key] === 'number' ? sum + r[key] : sum), 0);
+
+    function renderTable(headers, bodyRows, totals, descIndex = 1, actionIndex = -1, tableClass = '') {
+      const table = document.createElement('table');
+      if (tableClass) table.className = tableClass;
+      const thead = document.createElement('thead');
+      const hr = document.createElement('tr');
+      headers.forEach((h) => { const th = document.createElement('th'); const t = String(h ?? ''); if (t.includes('\n')) { const parts = t.split(/\n+/); const a=document.createElement('span'); a.className='th-main'; a.textContent=parts[0] || ''; th.appendChild(a); const b=document.createElement('span'); b.className='th-sub'; b.textContent=parts.slice(1).join(' ') || ''; th.appendChild(b); } else { th.textContent = t; } hr.appendChild(th); });
+      thead.appendChild(hr); table.appendChild(thead);
+
+      const tbody = document.createElement('tbody');
+      bodyRows.forEach((row) => {
+        const tr = document.createElement('tr');
+        if (row.isTotal) tr.classList.add('total-row');
+        if (row.isCustom) tr.classList.add('custom-row');
+        if (row.isClickable) tr.classList.add('clickable-row');
+        if (row.isSelected) tr.classList.add('selected-row');
+        if (row.editState === 'up') tr.classList.add('edited-up');
+        if (row.editState === 'down') tr.classList.add('edited-down');
+        row.cells.forEach((cell, idx) => {
+          const td = document.createElement('td');
+          const text = cell ?? '';
+          if (idx === descIndex && typeof text === 'string' && text.includes('\n')) {
+            const parts = text.split(/\n+/).map((part) => trimText(part)).filter(Boolean);
+            parts.forEach((part, lineIdx) => {
+              const line = document.createElement('span');
+              line.textContent = part;
+              if (lineIdx === 0) line.classList.add('desc-line-main');
+              if (lineIdx > 0) line.classList.add('desc-line-sub');
+              td.appendChild(line);
+            });
+          } else {
+            td.textContent = text;
+          }
+          if (idx === actionIndex && row.actionCell) {
+            td.textContent = '';
+            const actions = Array.isArray(row.actionCell) ? row.actionCell : [row.actionCell];
+            actions.forEach((act) => {
+              const actionBtn = document.createElement('button');
+              actionBtn.type = 'button';
+              actionBtn.className = act.className || 'inline-btn';
+              actionBtn.textContent = act.text || 'Action';
+              actionBtn.addEventListener('click', act.onClick);
+              td.appendChild(actionBtn);
+            });
+          }
+          if (idx === descIndex && row.indentLevel) td.style.paddingLeft = `${0.7 + row.indentLevel * 1.1}rem`;
+          if (idx === descIndex && (row.forceBold || row.isParent)) td.classList.add('parent-row');
+          tr.appendChild(td);
+        });
+        if (row.onClick) tr.addEventListener('click', row.onClick);
+        tbody.appendChild(tr);
+      });
+      table.appendChild(tbody);
+
+      if (Array.isArray(totals) && totals.length) {
+        const tfoot = document.createElement('tfoot');
+        const trf = document.createElement('tr');
+        totals.forEach((v) => { const td = document.createElement('td'); td.textContent = v; trf.appendChild(td); });
+        tfoot.appendChild(trf); table.appendChild(tfoot);
+      }
+      return table;
+    }
+
+    const money = (n) => Number(n || 0).toLocaleString(undefined, { maximumFractionDigits: 2 });
+    const toNumber = (v) => (typeof v === 'number' && Number.isFinite(v) ? v : 0);
+
+    function getSectionBudgetTotals(dept, sectionKey) {
+      const src = dept?.sections?.[sectionKey] || [];
+      const totalRow = src.find((r) => /^total\s+(personnel\s+services|operating\s+expenditures)$/i.test(trimText(r.description || '')))
+        || src.find((r) => !!r.isTotal && !/^total\s*budget$/i.test(trimText(r.description || '')));
+      const body = src.filter((r) => {
+        const d = trimText(r.description || '');
+        if (/^total\s*budget$/i.test(d)) return false;
+        if (totalRow && r === totalRow) return false;
+        return !r.isTotal;
+      });
+      if (body.length) {
+        return { adopted: totalFor(body, 'y2026'), proposal: totalFor(body, 'y2027') };
+      }
+      return { adopted: toNumber(totalRow?.y2026), proposal: toNumber(totalRow?.y2027) };
+    }
+
+    function getDepartmentBudgetSummary(dept) {
+      const personnel = getSectionBudgetTotals(dept, 'personnel');
+      const operating = getSectionBudgetTotals(dept, 'operating');
+      const adopted = personnel.adopted + operating.adopted;
+      const proposal = personnel.proposal + operating.proposal;
+      const changePct = Math.abs(adopted) < 0.000001 ? 0 : ((proposal - adopted) / Math.abs(adopted)) * 100;
+      return { adopted, proposal, changePct, personnel: personnel.proposal, operating: operating.proposal };
+    }
+
+    function getSectionBodyRows(dept, sectionKey) {
+      const src = dept?.sections?.[sectionKey] || [];
+      const totalRow = src.find((r) => /^total\s+(personnel\s+services|operating\s+expenditures)$/i.test(trimText(r.description || '')))
+        || src.find((r) => !!r.isTotal && !/^total\s*budget$/i.test(trimText(r.description || '')));
+      const body = src.filter((r) => {
+        const d = trimText(r.description || '');
+        if (/^total\s*budget$/i.test(d)) return false;
+        if (totalRow && r === totalRow) return false;
+        return !r.isTotal;
+      });
+      return { body, totalRow };
+    }
+
+    function drawBudgetChart(summary) {
+      if (!el.budgetChartCanvas) return;
+      const canvas = el.budgetChartCanvas;
+      const ctx = canvas.getContext('2d');
+      if (!ctx) return;
+      const rect = canvas.getBoundingClientRect();
+      const dpr = window.devicePixelRatio || 1;
+      canvas.width = Math.max(260, Math.floor(rect.width * dpr));
+      canvas.height = Math.max(260, Math.floor(rect.width * dpr));
+      const cx = canvas.width / 2;
+      const cy = canvas.height / 2;
+      const baseR = Math.min(canvas.width, canvas.height) * 0.33;
+      const data = [
+        { key: 'Personnel', value: Math.max(0, summary.personnel), color: '#f29a45' },
+        { key: 'Operating', value: Math.max(0, summary.operating), color: '#6b7cff' }
+      ];
+      const total = data.reduce((a, b) => a + b.value, 0);
+
+      ctx.clearRect(0, 0, canvas.width, canvas.height);
+      if (total <= 0.000001) {
+        ctx.strokeStyle = '#e7e7e7';
+        ctx.lineWidth = 24 * dpr;
+        ctx.beginPath();
+        ctx.arc(cx, cy, baseR, 0, Math.PI * 2);
+        ctx.stroke();
+        return;
+      }
+
+      let start = -Math.PI / 2;
+      data.forEach((slice, idx) => {
+        const angle = (slice.value / total) * Math.PI * 2;
+        const end = start + angle;
+        const mid = start + angle / 2;
+        const isHover = idx === budgetChartHover;
+        const boost = isHover ? 12 * dpr : 0;
+        const xoff = Math.cos(mid) * boost;
+        const yoff = Math.sin(mid) * boost;
+
+        ctx.save();
+        ctx.translate(xoff, yoff);
+        ctx.beginPath();
+        ctx.moveTo(cx, cy);
+        ctx.arc(cx, cy, baseR + (isHover ? 7 * dpr : 0), start, end);
+        ctx.closePath();
+        ctx.fillStyle = slice.color;
+        if (isHover) {
+          ctx.shadowColor = 'rgba(0,0,0,0.25)';
+          ctx.shadowBlur = 22 * dpr;
+        }
+        ctx.fill();
+        ctx.restore();
+        slice.start = start;
+        slice.end = end;
+        slice.mid = mid;
+        slice.pct = total > 0 ? (slice.value / total) * 100 : 0;
+        slice.boost = boost;
+        start = end;
+      });
+
+      data.forEach((slice) => {
+        if (slice.pct < 0.05) return;
+        const tx = cx + Math.cos(slice.mid) * (baseR * 0.7 + slice.boost);
+        const ty = cy + Math.sin(slice.mid) * (baseR * 0.7 + slice.boost);
+        ctx.fillStyle = '#fff';
+        ctx.font = `800 ${13 * dpr}px Inter, "Segoe UI", sans-serif`;
+        ctx.textAlign = 'center';
+        ctx.textBaseline = 'middle';
+        ctx.strokeStyle = 'rgba(0,0,0,0.35)';
+        ctx.lineWidth = 3 * dpr;
+        ctx.strokeText(`${slice.pct.toFixed(1)}%`, tx, ty);
+        ctx.fillText(`${slice.pct.toFixed(1)}%`, tx, ty);
+      });
+
+      // donut hole for cleaner look
+      ctx.fillStyle = '#fff';
+      ctx.beginPath();
+      ctx.arc(cx, cy, baseR * 0.46, 0, Math.PI * 2);
+      ctx.fill();
+    }
+
+    function renderBudgetLegend(summary) {
+      if (!el.budgetChartLegend) return;
+      const total = Math.max(0, summary.personnel) + Math.max(0, summary.operating);
+      const rows = [
+        { label: 'Personnel Services', color: '#f29a45', value: summary.personnel },
+        { label: 'Operating Expenditures', color: '#6b7cff', value: summary.operating }
+      ];
+      el.budgetChartLegend.innerHTML = '';
+      rows.forEach((r) => {
+        const pct = total > 0 ? (Math.max(0, r.value) / total) * 100 : 0;
+        const item = document.createElement('div');
+        item.className = 'legend-item';
+        item.innerHTML = `<span class="legend-swatch" style="background:${r.color}"></span><span>${r.label}</span><strong>$${money(r.value)} (${pct.toFixed(1)}%)</strong>`;
+        el.budgetChartLegend.appendChild(item);
+      });
+    }
+
+    function updateTopSummary(dept) {
+      const summary = getDepartmentBudgetSummary(dept);
+      if (el.totalBudgetValue) el.totalBudgetValue.textContent = `$${money(summary.proposal)}`;
+      if (el.totalBudgetSub) el.totalBudgetSub.textContent = `vs 2026: $${money(summary.adopted)}`;
+      if (el.budgetChangeValue) {
+        const sign = summary.changePct > 0 ? '+' : '';
+        el.budgetChangeValue.textContent = `${sign}${summary.changePct.toFixed(2)}%`;
+        el.budgetChangeValue.classList.toggle('metric-positive', summary.changePct > 0.000001);
+        el.budgetChangeValue.classList.toggle('metric-negative', summary.changePct < -0.000001);
+      }
+      el.totalBudgetBtn?.setAttribute('aria-label', `Total budget ${money(summary.proposal)}. Click for chart.`);
+      return summary;
+    }
+
+    function openBudgetChart() {
+      const dept = getCurrentDept();
+      if (!dept && String(el.deptSelect?.value || '') === '__all__') {
+        return;
+      }
+      if (!dept) return;
+      const summary = getDepartmentBudgetSummary(dept);
+      if (el.budgetChartTitle) el.budgetChartTitle.textContent = `${trimText(dept.departmentTitle || dept.sheetName)} Budget Mix`;
+      if (el.budgetChartMeta) el.budgetChartMeta.textContent = `2027 requested total $${money(summary.proposal)} (${summary.changePct >= 0 ? '+' : ''}${summary.changePct.toFixed(2)}% vs 2026)`;
+      budgetChartHover = -1;
+      drawBudgetChart(summary);
+      renderBudgetLegend(summary);
+      el.budgetChartModal?.classList.add('open');
+    }
+    const setAmountSign = (delta) => {
+      if (!el.amountSign) return;
+      if (!Number.isFinite(delta) || Math.abs(delta) < 0.000001) el.amountSign.textContent = '±';
+      else el.amountSign.textContent = delta < 0 ? '−' : '+';
+    };
+    const editDeltaState = (current, baseline) => {
+      const delta = toNumber(current) - toNumber(baseline);
+      if (Math.abs(delta) < 0.000001) return '';
+      return delta > 0 ? 'up' : 'down';
+    };
+
+    function getSelectionValues() {
+      if (!selectedItem?.row) return { adopted: 0, proposal: 0 };
+      const row = selectedItem.row;
+      const adopted = toNumber(row[selectedItem.y2026Key]);
+      const proposal = toNumber(row[selectedItem.y2027Key]);
+      return { adopted, proposal };
+    }
+
+    function updateEditorPanel() {
+      const has = !!selectedItem?.row;
+      el.editorEmpty.style.display = has ? 'none' : 'grid';
+      el.proposalSlider.setAttribute('aria-valuenow', el.proposalSlider.value);
+      if (!has) {
+        el.editorTitle.textContent = activeSection === 'roster' ? 'Select a position' : 'Select a line item';
+        if (el.rosterAddModal) el.rosterAddModal.classList.remove('open');
+        el.editorSubtitle.textContent = activeSection === 'roster' ? 'Click any position to adjust 2027 count.' : 'Click any editable row to adjust 2027 proposal.';
+        el.editorPanel.classList.remove('is-increase', 'is-decrease');
+        el.editorPanel.classList.toggle('roster-mode', activeSection === 'roster');
+        el.resetLineBtn.disabled = true;
+        el.adoptedLabel.textContent = activeSection === 'roster' ? '2026 Count' : '2026 Adopted';
+        el.proposalLabel.textContent = activeSection === 'roster' ? '2027 Count' : '2027 Proposal';
+        el.adoptedValue.textContent = activeSection === 'roster' ? '0' : '$0';
+        el.proposalValue.textContent = activeSection === 'roster' ? '0' : '$0';
+        el.proposalSlider.value = '0';
+        el.amountInput.value = '';
+        setAmountSign(0);
+        el.percentInput.value = '';
+        const noSelRoster = activeSection === 'roster';
+        el.amountInput.placeholder = noSelRoster ? 'Add / remove count' : '0.00';
+        el.percentInput.placeholder = noSelRoster ? '2027 Count' : '0.00';
+        el.percentInput.parentElement?.classList.toggle('has-suffix', !noSelRoster);
+        if (el.amountSign) el.amountSign.style.display = noSelRoster ? 'none' : '';
+        el.noteInput.value = '';
+        if (el.deleteCustomAcctBtn) {
+          el.deleteCustomAcctBtn.style.display = 'none';
+          el.deleteCustomAcctBtn.disabled = true;
+        }
+        return;
+      }
+
+      const row = selectedItem.row;
+      const { adopted, proposal } = getSelectionValues();
+      const isCustomZeroBase = !!row.isCustom && selectedItem.section !== 'roster' && Math.abs(adopted) < 0.000001;
+      const baseForPct = isCustomZeroBase ? Number(selectedItem.sliderBase || 1) : adopted;
+      const pct = Math.abs(baseForPct) < 0.000001 ? 0 : ((proposal - baseForPct) / baseForPct) * 100;
+      const isRoster = selectedItem.section === 'roster';
+      el.editorPanel.classList.toggle('roster-mode', isRoster);
+      el.editorTitle.textContent = row.descriptionDisplay || row.description || row.title || 'Line Item';
+      const acct = trimText(row.obj || row.grade || '');
+      const sectionLabel = (selectedItem.section || '').toUpperCase();
+      el.editorSubtitle.textContent = isRoster ? 'Use 2027 Count controls to edit count.' : `${sectionLabel}${acct ? ` & Acct ${acct}` : ''}`;
+      el.adoptedLabel.textContent = isRoster ? '2026 Count' : '2026 Adopted';
+      el.proposalLabel.textContent = isRoster ? '2027 Count' : '2027 Proposal';
+      el.adoptedValue.textContent = isRoster ? String(Math.round(adopted)) : `$${money(adopted)}`;
+      el.proposalValue.textContent = isRoster ? String(Math.round(proposal)) : `$${money(proposal)}`;
+      const sliderVal = isRoster ? Math.max(-100, Math.min(100, proposal - adopted)) : Math.max(-100, Math.min(100, pct));
+      el.proposalSlider.value = String(sliderVal);
+      const delta = proposal - adopted;
+      el.amountInput.value = proposal === adopted ? '' : (isRoster ? String(Math.abs(Math.round(delta))) : Math.abs(delta).toFixed(2));
+      setAmountSign(isRoster ? 0 : delta);
+      el.percentInput.value = isRoster ? String(Math.round(proposal)) : pct.toFixed(2);
+      el.amountInput.placeholder = isRoster ? 'Add / remove count' : '0.00';
+      el.percentInput.placeholder = isRoster ? '2027 Count' : '0.00';
+      el.percentInput.parentElement?.classList.toggle('has-suffix', !isRoster);
+      if (el.amountSign) el.amountSign.style.display = isRoster ? 'none' : '';
+      if (el.rosterCountInput) el.rosterCountInput.value = isRoster ? String(Math.max(0, Math.round(proposal))) : '';
+      el.noteInput.value = itemNotes.get(row.uid) || '';
+      el.editorPanel.classList.toggle('is-increase', proposal > adopted);
+      el.editorPanel.classList.toggle('is-decrease', proposal < adopted);
+      const originalRaw = row[selectedItem.y2027OriginalKey];
+      const originalBaseline = (typeof originalRaw === 'number' && Number.isFinite(originalRaw)) ? originalRaw : adopted;
+      el.resetLineBtn.disabled = Math.abs(proposal - originalBaseline) < 0.000001;
+      if (el.deleteCustomAcctBtn) {
+        const showDelete = !isRoster && !!row.isCustom;
+        el.deleteCustomAcctBtn.style.display = showDelete ? '' : 'none';
+        el.deleteCustomAcctBtn.disabled = !showDelete;
+      }
+    }
+
+    function setSelectedItem(section, row) {
+      if (!isSectionEditable(section)) return;
+      if (!row || row.isHeader || row.isTotal) return;
+      const y2026Key = section === 'roster' ? 'fy2026' : 'y2026';
+      const y2027Key = section === 'roster' ? 'fy2027' : 'y2027';
+      const y2027OriginalKey = section === 'roster' ? 'fy2027Original' : 'y2027Original';
+      const adoptedBase = toNumber(row[y2026Key]);
+      const proposalBase = toNumber(row[y2027Key]);
+      const sliderBase = (section !== 'roster' && row.isCustom && Math.abs(adoptedBase) < 0.000001) ? (Math.abs(proposalBase) < 0.000001 ? 1 : proposalBase) : null;
+      selectedItem = { section, row, uid: row.uid, y2026Key, y2027Key, y2027OriginalKey, sliderBase };
+      updateEditorPanel();
+      renderData();
+    }
+
+    function applyProposalValue(nextProposal) {
+      if (!selectedItem?.row) return;
+      if (!isSectionEditable(selectedItem.section)) return;
+      const row = selectedItem.row;
+      const isRoster = selectedItem.section === 'roster';
+      el.editorPanel.classList.toggle('roster-mode', isRoster);
+      const proposalVal = Number.isFinite(nextProposal) ? nextProposal : toNumber(row[selectedItem.y2027Key]);
+      row[selectedItem.y2027Key] = isRoster ? Math.max(0, Math.round(proposalVal)) : proposalVal;
+      const originalRaw = row[selectedItem.y2027OriginalKey];
+      const original = (typeof originalRaw === 'number' && Number.isFinite(originalRaw)) ? originalRaw : toNumber(row[selectedItem.y2026Key]);
+      const current = toNumber(row[selectedItem.y2027Key]);
+      if (Math.abs(current - original) < 0.000001) edited2027.delete(row.uid);
+      else edited2027.set(row.uid, current);
+      updateEditorPanel();
+      renderData();
+    }
+
+    function resetSelectedLine() {
+      if (!selectedItem?.row) return;
+      if (!isSectionEditable(selectedItem.section)) return;
+      const row = selectedItem.row;
+      const originalRaw = row[selectedItem.y2027OriginalKey];
+      const fallback = toNumber(row[selectedItem.y2026Key]);
+      row[selectedItem.y2027Key] = (typeof originalRaw === 'number' && Number.isFinite(originalRaw)) ? originalRaw : fallback;
+      edited2027.delete(row.uid);
+      updateEditorPanel();
+      renderData();
+    }
+
+
+    function findRosterInsertIndex(roster, bucket) {
+      const targetBucket = bucket === 'part-time' ? 'part-time' : 'full-time';
+      const headerIdx = roster.findIndex((r) => r.isHeader && (r.rosterBucket || 'full-time') === targetBucket);
+      if (headerIdx < 0) {
+        const totalIdx = roster.findIndex((r) => r.isTotal);
+        return totalIdx >= 0 ? totalIdx : roster.length;
+      }
+      let rangeEnd = roster.length;
+      for (let i = headerIdx + 1; i < roster.length; i += 1) {
+        if (roster[i].isHeader) { rangeEnd = i; break; }
+      }
+      const totalIdx = roster.findIndex((r, i) => i > headerIdx && i < rangeEnd && r.isTotal);
+      if (totalIdx >= 0) return totalIdx;
+      return rangeEnd;
+    }
+
+    function addRosterPosition() {
+      const dept = getCurrentDept();
+      if (!dept) return;
+      const title = trimText(el.newPosTitle?.value || '');
+      const grade = trimText(el.newPosGrade?.value || '');
+      const count = Math.max(0, Math.round(Number(el.newPosCount?.value || 0)));
+      const bucket = (el.newPosBucket?.value || 'full-time') === 'part-time' ? 'part-time' : 'full-time';
+      if (!title) return;
+      const roster = dept.sections.roster || [];
+      const insertIdx = findRosterInsertIndex(roster, bucket);
+      const newRow = {
+        uid: nextCustomRosterUid(dept.sheetName),
+        sourceRow: null,
+        title,
+        grade,
+        fy2024: null,
+        fy2025: null,
+        fy2026: 0,
+        fy2027: count,
+        fy2027Original: 0,
+        indentLevel: 2,
+        isParent: false,
+        isHeader: false,
+        isTotal: false,
+        isCustom: true,
+        rosterBucket: bucket
+      };
+      roster.splice(Math.max(0, Math.min(insertIdx, roster.length)), 0, newRow);
+      edited2027.set(newRow.uid, count);
+      if (el.newPosTitle) el.newPosTitle.value = '';
+      if (el.newPosGrade) el.newPosGrade.value = '';
+      if (el.newPosCount) el.newPosCount.value = '';
+      if (el.newPosBucket) el.newPosBucket.value = 'full-time';
+      setSelectedItem('roster', newRow);
+      el.rosterAddModal?.classList.remove('open');
+      renderData();
+    }
+
+    function deleteRosterPosition(row) {
+      if (!row?.isCustom) return;
+      const dept = getCurrentDept();
+      if (!dept) return;
+      dept.sections.roster = (dept.sections.roster || []).filter((r) => r.uid !== row.uid);
+      edited2027.delete(row.uid);
+      itemNotes.delete(row.uid);
+      if (selectedItem?.uid === row.uid) selectedItem = null;
+      renderData();
+    }
+    function deleteAccountLine(section, row) {
+      if (!row?.isCustom) return;
+      const dept = getCurrentDept();
+      if (!dept) return;
+      dept.sections[section] = (dept.sections[section] || []).filter((r) => r.uid !== row.uid);
+      edited2027.delete(row.uid);
+      itemNotes.delete(row.uid);
+      if (selectedItem?.uid === row.uid) selectedItem = null;
+      renderData();
+    }
+
+    function parseAccountOrderValue(value) {
+      const txt = trimText(value || '');
+      if (!txt) return Number.POSITIVE_INFINITY;
+      const compact = txt.replace(/[^\d.]/g, '');
+      const m = compact.match(/\d+(?:\.\d+)?/);
+      if (!m) return Number.POSITIVE_INFINITY;
+      const num = Number(m[0]);
+      return Number.isFinite(num) ? num : Number.POSITIVE_INFINITY;
+    }
+
+    function buildAccountParentOptions(sectionRows) {
+      const opts = [];
+      (sectionRows || []).forEach((r) => {
+        if (r.isTotal || r.isHeader) return;
+        if ((r.indentLevel || 0) !== 0) return;
+        const labelParts = [trimText(r.obj || ''), trimText(r.proj || ''), trimText(r.description || r.descriptionDisplay || '')].filter(Boolean);
+        opts.push({ uid: r.uid, label: labelParts.join(' • ') || 'Account' });
+      });
+      return opts;
+    }
+
+    function openAccountAddModal() {
+      if (activeSection !== 'personnel' && activeSection !== 'operating') return;
+      if (!isSectionEditable(activeSection)) return;
+      const dept = getCurrentDept();
+      if (!dept) return;
+      const rows = dept.sections[activeSection] || [];
+      const options = buildAccountParentOptions(rows);
+      if (el.newAcctParent) {
+        el.newAcctParent.innerHTML = '<option value="">Parent account (required for sub account)</option>';
+        options.forEach((opt) => {
+          const node = document.createElement('option');
+          node.value = opt.uid;
+          node.textContent = opt.label;
+          el.newAcctParent.appendChild(node);
+        });
+        if (selectedItem?.section === activeSection && selectedItem?.row && (selectedItem.row.indentLevel || 0) === 0) {
+          el.newAcctParent.value = selectedItem.row.uid;
+        } else {
+          el.newAcctParent.value = '';
+        }
+      }
+      if (el.newAcctType) el.newAcctType.value = 'budget';
+      el.accountAddModal?.classList.add('open');
+    }
+
+    function addAccountLine() {
+      const dept = getCurrentDept();
+      if (!dept || (activeSection !== 'personnel' && activeSection !== 'operating')) return;
+      if (!isSectionEditable(activeSection)) return;
+      const lineType = (el.newAcctType?.value || 'budget') === 'subproject' ? 'subproject' : 'budget';
+      const parentUid = trimText(el.newAcctParent?.value || '');
+      const obj = trimText(el.newAcctObj?.value || '');
+      const proj = trimText(el.newAcctProj?.value || '');
+      const desc = trimText(el.newAcctDesc?.value || '');
+      const amount = Number(el.newAcctAmount?.value || 0);
+      if (!desc) return;
+
+      const src = dept.sections[activeSection] || [];
+      let insertIdx = src.findIndex((r) => r.isTotal);
+      if (insertIdx < 0) insertIdx = src.length;
+
+      if (lineType === 'budget') {
+        const newOrder = parseAccountOrderValue(obj || proj);
+        for (let i = 0; i < insertIdx; i += 1) {
+          const row = src[i];
+          if (row.isHeader || row.isTotal) continue;
+          if ((row.indentLevel || 0) !== 0) continue;
+          const rowOrder = parseAccountOrderValue(row.obj || row.proj);
+          if (!Number.isFinite(rowOrder)) continue;
+          if (newOrder < rowOrder) { insertIdx = i; break; }
+        }
+      } else {
+        if (!parentUid) return;
+        const parentIdx = src.findIndex((r) => r.uid === parentUid);
+        if (parentIdx < 0) return;
+        const parentIndent = Number(src[parentIdx].indentLevel || 0);
+        let blockEnd = parentIdx + 1;
+        while (blockEnd < insertIdx) {
+          const nextIndent = Number(src[blockEnd].indentLevel || 0);
+          if (src[blockEnd].isTotal || nextIndent <= parentIndent) break;
+          blockEnd += 1;
+        }
+
+        const siblingIndent = parentIndent + 1;
+        const newOrder = parseAccountOrderValue(obj || proj);
+        insertIdx = blockEnd;
+        for (let i = parentIdx + 1; i < blockEnd; i += 1) {
+          const sib = src[i];
+          if (Number(sib.indentLevel || 0) !== siblingIndent) continue;
+          const sibOrder = parseAccountOrderValue(sib.obj || sib.proj);
+          if (!Number.isFinite(sibOrder)) continue;
+          if (newOrder < sibOrder) { insertIdx = i; break; }
+        }
+      }
+
+      const nextNativeAtInsert = src.slice(Math.max(0, insertIdx)).find((n) => !n.isCustom && typeof n.sourceRow === 'number' && !/^total\s*budget$/i.test(trimText(n.description || '')));
+      const parentRow = lineType === 'subproject' ? src.find((r) => r.uid === parentUid) : null;
+      const row = {
+        uid: nextCustomAccountUid(dept.sheetName, activeSection),
+        sourceRow: null,
+        obj,
+        proj,
+        description: desc,
+        descriptionDisplay: desc,
+        isParent: lineType === 'budget',
+        indentLevel: lineType === 'subproject' ? 1 : 0,
+        y2024: null,
+        y2025: null,
+        y2026: 0,
+        y2027: Number.isFinite(amount) ? amount : 0,
+        y2027Original: 0,
+        isTotal: false,
+        isCustom: true,
+        customKind: lineType,
+        parentUid: lineType === 'subproject' ? parentUid : null,
+        parentSourceRow: lineType === 'subproject' ? parentRow?.sourceRow : null,
+        note: '',
+        beforeSourceRow: nextNativeAtInsert?.sourceRow
+      };
+      src.splice(Math.max(0, Math.min(insertIdx, src.length)), 0, row);
+      edited2027.set(row.uid, row.y2027);
+      if (el.newAcctType) el.newAcctType.value = 'budget';
+      if (el.newAcctParent) el.newAcctParent.value = '';
+      if (el.newAcctObj) el.newAcctObj.value = '';
+      if (el.newAcctProj) el.newAcctProj.value = '';
+      if (el.newAcctDesc) el.newAcctDesc.value = '';
+      if (el.newAcctAmount) el.newAcctAmount.value = '';
+      el.accountAddModal?.classList.remove('open');
+      setSelectedItem(activeSection, row);
+      renderData();
+    }
+
+    function renderAllDivisionsView() {
+      const sourceRows = departments.map((dept) => {
+        const sum = getDepartmentBudgetSummary(dept);
+        const p = getSectionBodyRows(dept, 'personnel').body;
+        const o = getSectionBodyRows(dept, 'operating').body;
+        return {
+          dept,
+          label: trimText(dept.departmentTitle || dept.sheetName),
+          y2024: totalFor(p, 'y2024') + totalFor(o, 'y2024'),
+          y2025: totalFor(p, 'y2025') + totalFor(o, 'y2025'),
+          adopted: sum.adopted,
+          proposal: sum.proposal
+        };
+      });
+
+      let rows = sourceRows.map((r) => ({ ...r, pct: Math.abs(r.adopted) < 1e-9 ? 0 : ((r.proposal - r.adopted) / Math.abs(r.adopted)) * 100 }));
+      if (allAccountsGrouped) {
+        const coreOpsPattern = /facilities maintenance|park landscape management and operations|park maintenance|park maticense|fleet maintenance/i;
+        const core = rows.filter((r) => coreOpsPattern.test(r.label));
+        const rest = rows.filter((r) => !coreOpsPattern.test(r.label));
+        const mkGroup = (label, items) => ({
+          label,
+          y2024: items.reduce((a, b) => a + b.y2024, 0),
+          y2025: items.reduce((a, b) => a + b.y2025, 0),
+          adopted: items.reduce((a, b) => a + b.adopted, 0),
+          proposal: items.reduce((a, b) => a + b.proposal, 0)
+        });
+        rows = [
+          mkGroup('Maintenance Services', core),
+          mkGroup('Leisure Services', rest)
+        ].map((r) => ({ ...r, pct: Math.abs(r.adopted) < 1e-9 ? 0 : ((r.proposal - r.adopted) / Math.abs(r.adopted)) * 100 }));
+      } else {
+        rows.sort((a, b) => b.proposal - a.proposal);
+      }
+
+      const yearKey = allAccountsYear === '2024' ? 'y2024' : (allAccountsYear === '2025' ? 'y2025' : (allAccountsYear === '2026' ? 'adopted' : 'proposal'));
+      const yearLabel = allAccountsYear;
+      const bodyRows = rows.map((r) => ({
+        cells: [r.label, `$${money(r[yearKey])}`, `$${money(r.proposal)}`, `${r.pct >= 0 ? '+' : ''}${r.pct.toFixed(2)}%`],
+        isClickable: false,
+        onClick: null
+      }));
+      const totals = [
+        allAccountsGrouped ? 'Total (Grouped)' : 'Total All Divisions',
+        `$${money(rows.reduce((a, b) => a + b[yearKey], 0))}`,
+        `$${money(rows.reduce((a, b) => a + b.proposal, 0))}`,
+        `${((() => { const a = rows.reduce((x, y) => x + y.adopted, 0); const p = rows.reduce((x, y) => x + y.proposal, 0); return (Math.abs(a) < 1e-9 ? 0 : ((p - a) / Math.abs(a)) * 100); })()).toFixed(2)}%`
+      ];
+      const table = renderTable(['Division', `${yearLabel}\nView`, '2027\nRequested', '%\nChange'], bodyRows, totals, 0, -1, 'divisions-table');
+
+      const wrap = document.createElement('div');
+      wrap.className = 'all-layout';
+      const left = document.createElement('div');
+      left.className = 'all-list';
+      const head = document.createElement('div');
+      head.className = 'all-list-head';
+      head.innerHTML = `<div class="section-label">Division Totals</div><div class="all-controls"><select id="allYearSelect" aria-label="Year view"><option value="2024">2024</option><option value="2025">2025</option><option value="2026">2026</option><option value="2027">2027</option></select></div>`;
+      left.appendChild(head);
+      left.appendChild(table);
+
+      const right = document.createElement('div');
+      right.className = 'all-side';
+      right.innerHTML = '<div class="section-label" style="margin:0">Division Budget Mix (2027)</div>'
+        + '<div class="all-visuals">'
+        + '<div class="viz-card" style="position:relative"><canvas id="divisionsPieCanvas" class="chart-canvas" style="max-height:620px"></canvas><div id="pieHoverTip" class="pie-hover-tip"></div></div>'
+        + '</div>';
+
+      wrap.appendChild(left);
+      wrap.appendChild(right);
+      el.dataRegion.innerHTML = '';
+      el.dataRegion.appendChild(wrap);
+
+      const yearSelect = left.querySelector('#allYearSelect');
+      if (yearSelect) {
+        yearSelect.value = allAccountsYear;
+        yearSelect.addEventListener('change', (e) => { allAccountsYear = String(e.target.value || '2027'); renderAllDivisionsView(); });
+      }
+
+      const bubbleRows = [...table.querySelectorAll('tbody tr')];
+      bubbleRows.forEach((tr, i) => {
+        const td = tr.children[0];
+        if (!td) return;
+        const b = document.createElement('span');
+        b.className = 'division-bubble';
+        b.style.background = DIVISION_COLORS[i % DIVISION_COLORS.length];
+        td.prepend(b);
+      });
+
+      const pie = right.querySelector('#divisionsPieCanvas');
+      const tip = right.querySelector('#pieHoverTip');
+      drawDivisionsPie(pie, rows);
+
+      const pieSliceAt = (e) => {
+        if (!pie) return -1;
+        const rect = pie.getBoundingClientRect();
+        const x = e.clientX - rect.left; const y = e.clientY - rect.top;
+        const cx0 = rect.width / 2; const cy0 = rect.height / 2;
+        const dx = x - cx0; const dy = y - cy0;
+        const dist = Math.sqrt(dx * dx + dy * dy);
+        const outer = rect.width * 0.34 + 12;
+        if (dist > outer || dist < rect.width * 0.14) return -1;
+        let ang = Math.atan2(dy, dx) + Math.PI / 2;
+        if (ang < 0) ang += Math.PI * 2;
+        const total = rows.reduce((a, b) => a + Math.max(0, b.proposal), 0);
+        let run = 0;
+        let hit = -1;
+        rows.forEach((r, i) => {
+          const seg = total > 0 ? (Math.max(0, r.proposal) / total) * Math.PI * 2 : 0;
+          if (hit === -1 && ang >= run && ang <= run + seg) hit = i;
+          run += seg;
+        });
+        return hit;
+      };
+
+      pie?.addEventListener('mousemove', (e) => {
+        const hover = pieSliceAt(e);
+        if (hover !== divisionsPieHover) { divisionsPieHover = hover; drawDivisionsPie(pie, rows); }
+        if (!tip) return;
+        if (hover < 0 || !rows[hover]) { tip.style.display = 'none'; return; }
+        const r = rows[hover];
+        const tot = rows.reduce((a, b) => a + Math.max(0, b.proposal), 0);
+        const pct = tot > 0 ? (Math.max(0, r.proposal) / tot) * 100 : 0;
+        tip.innerHTML = `<strong>${r.label}</strong><div>$${money(r.proposal)} • ${pct.toFixed(1)}%</div>`;
+        tip.style.display = 'block';
+        const rr = pie.getBoundingClientRect();
+        const rx = e.clientX - rr.left; const ry = e.clientY - rr.top;
+        tip.style.left = `${Math.min(rr.width - 170, Math.max(8, rx + 10))}px`;
+        tip.style.top = `${Math.min(rr.height - 56, Math.max(8, ry + 10))}px`;
+      });
+      pie?.addEventListener('mouseleave', () => {
+        if (divisionsPieHover !== -1) { divisionsPieHover = -1; drawDivisionsPie(pie, rows); }
+        if (tip) tip.style.display = 'none';
+      });
+      pie?.addEventListener('click', (e) => {
+        const hit = pieSliceAt(e);
+        if (hit < 0) return;
+        divisionsPieSelected = hit;
+        const r = rows[hit];
+        if (el.sliceInfoTitle) el.sliceInfoTitle.textContent = r.label;
+        if (el.sliceInfoGrid) el.sliceInfoGrid.innerHTML = `<div>2024: <strong>$${money(r.y2024 || 0)}</strong></div><div>2025: <strong>$${money(r.y2025 || 0)}</strong></div><div>2026: <strong>$${money(r.adopted || 0)}</strong></div><div>2027: <strong>$${money(r.proposal || 0)}</strong></div>`;
+        el.sliceInfoModal?.classList.add('open');
+        drawDivisionsPie(pie, rows);
+      });
+
+      selectedItem = null;
+      updateEditorPanel();
+    }
+
+    function drawDivisionsPie(canvas, rows) {
+      const ctx = canvas?.getContext('2d');
+      if (!ctx) return;
+      const rect = canvas.getBoundingClientRect();
+      const dpr = window.devicePixelRatio || 1;
+      canvas.width = Math.max(380, Math.floor(rect.width * dpr));
+      canvas.height = Math.max(380, Math.floor(rect.height * dpr));
+      const total = rows.reduce((a, b) => a + Math.max(0, b.proposal), 0);
+      const cx = canvas.width / 2;
+      const cy = (canvas.height / 2) + (24 * dpr);
+      const r = Math.min(canvas.width, canvas.height) * 0.285;
+      ctx.clearRect(0,0,canvas.width,canvas.height);
+      let startAng = -Math.PI / 2;
+      rows.forEach((row, i) => {
+        const value = Math.max(0, row.proposal);
+        const ang = total > 0 ? (value / total) * Math.PI * 2 : 0;
+        const mid = startAng + ang / 2;
+        const hover = i === divisionsPieHover;
+        const selected = i === divisionsPieSelected;
+        const push = (hover ? 10 : (selected ? 6 : 0)) * dpr;
+        const ox = Math.cos(mid) * push;
+        const oy = Math.sin(mid) * push;
+        ctx.save();
+        ctx.translate(ox, oy);
+        ctx.beginPath();
+        ctx.moveTo(cx, cy);
+        ctx.arc(cx, cy, r + (hover ? 5 * dpr : (selected ? 3 * dpr : 0)), startAng, startAng + ang);
+        ctx.closePath();
+        ctx.fillStyle = DIVISION_COLORS[i % DIVISION_COLORS.length];
+        ctx.fill();
+        ctx.restore();
+
+        const pct = total > 0 ? (value / total) * 100 : 0;
+        if (pct >= 5) {
+          const tx = cx + Math.cos(mid) * (r * 0.68 + push);
+          const ty = cy + Math.sin(mid) * (r * 0.68 + push);
+          ctx.fillStyle = '#fff';
+          ctx.font = `800 ${13 * dpr}px Inter, "Segoe UI", sans-serif`;
+          ctx.textAlign = 'center';
+          ctx.textBaseline = 'middle';
+          ctx.fillText(`${pct.toFixed(1)}%`, tx, ty);
+        }
+        startAng += ang;
+      });
+      ctx.fillStyle = '#fff';
+      ctx.beginPath();
+      ctx.arc(cx, cy, r * 0.48, 0, Math.PI * 2);
+      ctx.fill();
+    }
+    function renderData() {
+      const selectVal = String(el.deptSelect?.value || '');
+      if (selectVal === '__recimpact__' || selectVal === '__treebank__') {
+        setAllAccountsModeUI(false);
+        setSpecialFundMode(true);
+        const fund = selectVal === '__recimpact__' ? specialFunds.recimpact : specialFunds.treebank;
+        const rows = (fund?.rows || []).map((r) => ({
+          cells: [r.description || '', r.acct || '', r.proj || '', fmt(r.y2024), fmt(r.y2025), fmt(r.y2026Budget), fmt(r.y2026Projected), fmt(r.y2027)],
+          isTotal: !!r.isTotal,
+          isClickable: false,
+          onClick: null,
+          forceBold: !!r.isTotal || /^[A-Z][A-Z\s/&()-]+$/.test(trimText(r.description || ''))
+        }));
+        const table = renderTable(['Line Description', 'Acct\nNo', 'Proj\nNo', '2024\nActual', '2025\nActual', '2026\nBudget', '2026\nProjected', '2027\nBudget'], rows, null, 0, -1, 'budget-table');
+        el.dataRegion.innerHTML = '';
+        el.dataRegion.appendChild(table);
+        if (el.totalBudgetSub) el.totalBudgetSub.textContent = fund?.sheetName || 'Special Fund';
+        if (el.totalBudgetValue) el.totalBudgetValue.textContent = '$0.00';
+        if (el.budgetChangeValue) el.budgetChangeValue.textContent = '0.00%';
+        return;
+      }
+
+      const dept = getCurrentDept();
+      if (!dept && String(el.deptSelect?.value || '') === '__all__') {
+        setAllAccountsModeUI(true);
+        const ad = departments.reduce((a, d) => a + getDepartmentBudgetSummary(d).adopted, 0);
+        const pr = departments.reduce((a, d) => a + getDepartmentBudgetSummary(d).proposal, 0);
+        if (el.totalBudgetValue) el.totalBudgetValue.textContent = `$${money(pr)}`;
+        if (el.totalBudgetSub) el.totalBudgetSub.textContent = `vs 2026: $${money(ad)}`;
+        if (el.budgetChangeValue) {
+          const pct = Math.abs(ad) < 1e-9 ? 0 : ((pr - ad) / Math.abs(ad)) * 100;
+          el.budgetChangeValue.textContent = `${pct >= 0 ? '+' : ''}${pct.toFixed(2)}%`;
+        }
+        renderAllDivisionsView();
+        return;
+      }
+
+      if (!dept) {
+        setAllAccountsModeUI(false);
+        el.dataRegion.innerHTML = '';
+        if (el.totalBudgetValue) el.totalBudgetValue.textContent = '$0.00';
+        if (el.totalBudgetSub) el.totalBudgetSub.textContent = 'Personnel + Operating';
+        if (el.budgetChangeValue) el.budgetChangeValue.textContent = '0.00%';
+        return;
+      }
+
+      setAllAccountsModeUI(false);
+      setSpecialFundMode(false);
+      updateTopSummary(dept);
+      let table;
+
+      if (activeSection === 'roster') {
+        const src = dept.sections.roster;
+        const rosterEditable = isSectionEditable('roster');
+        if (!src.some((r) => r.isHeader)) src.unshift({ uid: `${dept.sheetName}:roster:header`, title: 'Full-Time Employees', grade: '', fy2024: null, fy2025: null, fy2026: null, fy2027: null, indentLevel: 1, isParent: true, isHeader: true, isTotal: false, rosterBucket: 'full-time' });
+        const rows = src.map((r) => ({
+          cells: [r.title, r.grade, fmt(r.fy2024), fmt(r.fy2025), fmt(r.fy2026), fmt(r.fy2027), ''],
+          indentLevel: r.indentLevel,
+          isParent: r.isParent,
+          forceBold: !!r.isHeader,
+          isTotal: !!r.isTotal,
+          isClickable: rosterEditable && !r.isHeader && !r.isTotal,
+          isSelected: rosterEditable && selectedItem?.uid === r.uid,
+          editState: (rosterEditable && !r.isHeader && !r.isTotal) ? editDeltaState(r.fy2027, r.fy2026) : '',
+          onClick: (rosterEditable && !r.isHeader && !r.isTotal) ? () => setSelectedItem('roster', r) : null,
+          actionCell: (!r.isHeader && !r.isTotal && r.isCustom) ? [
+            { text: 'Delete', className: 'inline-btn danger', onClick: (e) => { e.stopPropagation(); deleteRosterPosition(r); } }
+          ] : null
+        }));
+        table = renderTable(['Position Title', 'Grade / Class / Code', 'FY 2024', 'FY 2025', 'FY 2026', 'FY 2027', 'Actions'], rows, null, 0, 6, 'roster-table');
+        const bottomActions = document.createElement('div');
+        bottomActions.className = 'table-bottom-actions';
+        const addBtn = document.createElement('button');
+        addBtn.type = 'button';
+        addBtn.className = 'inline-btn';
+        addBtn.textContent = '+ Add Position';
+        addBtn.disabled = !rosterEditable;
+        if (rosterEditable) addBtn.addEventListener('click', () => el.rosterAddModal?.classList.add('open'));
+        bottomActions.appendChild(addBtn);
+        table.appendChild(bottomActions);
+      } else {
+
+        const { body, totalRow } = getSectionBodyRows(dept, activeSection);
+        const sectionLocked = !isSectionEditable(activeSection);
+        const totalLabel = activeSection === 'personnel' ? 'Total Personnel Services' : 'Total Operating Expenditures';
+        const rows = body.map((r) => ({
+          cells: [r.obj || '', r.proj || '', r.descriptionDisplay || r.description, fmt(r.y2024), fmt(r.y2025), fmt(r.y2026), fmt(r.y2027)],
+          indentLevel: r.indentLevel + 1,
+          isParent: r.isParent,
+          isTotal: false,
+          isCustom: !!r.isCustom,
+          isClickable: !sectionLocked,
+          isSelected: !sectionLocked && selectedItem?.uid === r.uid,
+          editState: (sectionLocked || r.isCustom) ? '' : editDeltaState(r.y2027, r.y2026),
+          onClick: sectionLocked ? null : () => setSelectedItem(activeSection, r),
+          forceBold: activeSection === 'personnel' || !!r.isParent || (activeSection === 'operating' && r.indentLevel === 0)
+        }));
+
+        const totals = body.length
+          ? ['', '', totalLabel, fmt(totalFor(body, 'y2024')), fmt(totalFor(body, 'y2025')), fmt(totalFor(body, 'y2026')), fmt(totalFor(body, 'y2027'))]
+          : (totalRow ? ['', '', totalLabel, fmt(totalRow.y2024), fmt(totalRow.y2025), fmt(totalRow.y2026), fmt(totalRow.y2027)] : null);
+
+        table = renderTable(['Object', 'Project', 'Line Description', '2024\nActual', '2025\nActual', '2026\nBudget', '2027\nDepartment Requested'], rows, totals, 2, -1, 'budget-table');
+        const bottomActions = document.createElement('div');
+        bottomActions.className = 'table-bottom-actions';
+        const addAcctBtn = document.createElement('button');
+        addAcctBtn.type = 'button';
+        addAcctBtn.className = 'inline-btn';
+        addAcctBtn.textContent = 'Add Account Line';
+        addAcctBtn.disabled = sectionLocked;
+        if (!sectionLocked) addAcctBtn.addEventListener('click', openAccountAddModal);
+        bottomActions.appendChild(addAcctBtn);
+        table.appendChild(bottomActions);
+      }
+
+      el.dataRegion.innerHTML = '';
+      el.dataRegion.appendChild(table);
+      updateEditorPanel();
+    }
+
+    function hydrateNotesFromWorkbook() {
+      itemNotes.clear();
+      departments.forEach((dept) => {
+        ['personnel', 'operating', 'roster'].forEach((section) => {
+          (dept.sections?.[section] || []).forEach((r) => {
+            if (!r?.uid) return;
+            const note = trimText(r.note || '');
+            if (note) itemNotes.set(r.uid, note);
+          });
+        });
+      });
+    }
+
+    function setFile(file) { if (!file) return; selectedFile = file; el.fileMeta.textContent = trimText(file.name); el.nextBtn.disabled = false; }
+
+    function downloadBlob(blob, filename) {
+      const url = URL.createObjectURL(blob);
+      const link = document.createElement('a');
+      link.href = url;
+      link.download = filename;
+      document.body.appendChild(link);
+      link.click();
+      link.remove();
+      setTimeout(() => URL.revokeObjectURL(url), 1500);
+    }
+
+    function getEditedRowsByDepartment(dept) {
+      const values = [];
+      const notes = [];
+      const customRows = [];
+      const customAccountRows = [];
+      const collectRows = (sectionRows, y2027Key, sectionName) => {
+        const rowsRef = sectionRows || [];
+        rowsRef.forEach((r, idx) => {
+          if (!r?.uid) return;
+          if (r.isCustom && sectionName === 'roster') {
+            customRows.push({
+              title: trimText(r.title || ''),
+              grade: trimText(r.grade || ''),
+              value: toNumber(r[y2027Key]),
+              note: trimText(itemNotes.get(r.uid) || ''),
+              bucket: r.rosterBucket || 'full-time'
+            });
+            return;
+          }
+          if (r.isCustom && (sectionName === 'personnel' || sectionName === 'operating')) {
+            const nextNative = rowsRef.slice(idx + 1).find((n) => !n.isCustom && typeof n.sourceRow === 'number' && !/^total\s*budget$/i.test(trimText(n.description || '')));
+            customAccountRows.push({
+              section: sectionName,
+              description: trimText(r.description || r.descriptionDisplay || ''),
+              obj: trimText(r.obj || ''),
+              proj: trimText(r.proj || ''),
+              customKind: trimText(r.customKind || 'budget') || 'budget',
+              value: toNumber(r[y2027Key]),
+              note: trimText(itemNotes.get(r.uid) || ''),
+              beforeSourceRow: Number.isFinite(r.beforeSourceRow) ? r.beforeSourceRow : nextNative?.sourceRow,
+              parentSourceRow: Number.isFinite(r.parentSourceRow) ? r.parentSourceRow : null
+            });
+            return;
+          }
+          const rowIdx = typeof r.sourceRow === 'number' ? r.sourceRow : Number(String(r.uid).split(':').pop());
+          if (!Number.isFinite(rowIdx)) return;
+          if (edited2027.has(r.uid)) {
+            const nextVal = edited2027.get(r.uid);
+            values.push({ rowIdx, value: Number.isFinite(nextVal) ? nextVal : 0 });
+            r[y2027Key] = Number.isFinite(nextVal) ? nextVal : 0;
+          }
+          if (itemNotes.has(r.uid)) {
+            const noteText = String(itemNotes.get(r.uid) ?? '');
+            if (trimText(noteText)) notes.push({ rowIdx, note: noteText });
+          }
+        });
+      };
+
+      collectRows(dept.sections.personnel, 'y2027', 'personnel');
+      collectRows(dept.sections.operating, 'y2027', 'operating');
+      collectRows(dept.sections.roster, 'fy2027', 'roster');
+      return { values, notes, customRows, customAccountRows };
+    }
+
+    function buildSheetPathMap(workbookXmlDoc, relsXmlDoc) {
+      const relById = new Map();
+      relsXmlDoc.querySelectorAll('Relationship').forEach((rel) => {
+        relById.set(rel.getAttribute('Id'), rel.getAttribute('Target'));
+      });
+
+      const map = new Map();
+      workbookXmlDoc.querySelectorAll('sheets > sheet').forEach((sheetNode) => {
+        const name = sheetNode.getAttribute('name');
+        const relId = sheetNode.getAttribute('r:id');
+        const target = relById.get(relId);
+        if (!name || !target) return;
+        const normalized = target.startsWith('/') ? target.slice(1) : `xl/${target.replace(/^\.\//, '')}`;
+        map.set(name, normalized);
+        const trimmed = trimText(name);
+        if (trimmed && trimmed !== name) map.set(trimmed, normalized);
+      });
+      return map;
+    }
+
+    function buildSharedStrings(zip, parser) {
+      const xml = zip.file('xl/sharedStrings.xml');
+      if (!xml) return [];
+      return xml.async('string').then((text) => {
+        const doc = parser.parseFromString(text, 'application/xml');
+        return [...doc.querySelectorAll('sst > si')].map((si) => {
+          const plain = si.querySelector('t');
+          if (plain) return plain.textContent || '';
+          return [...si.querySelectorAll('r > t')].map((t) => t.textContent || '').join('');
+        });
+      }).catch(() => []);
+    }
+
+    function createSheetNode(sheetDoc, name) {
+      const ns = sheetDoc.documentElement?.namespaceURI || null;
+      return ns ? sheetDoc.createElementNS(ns, name) : sheetDoc.createElement(name);
+    }
+
+    function createXmlNode(xmlDoc, name) {
+      const ns = xmlDoc?.documentElement?.namespaceURI || null;
+      return ns ? xmlDoc.createElementNS(ns, name) : xmlDoc.createElement(name);
+    }
+
+    function colLettersToIndex(colLetters) {
+      let idx = 0;
+      const txt = String(colLetters || '').toUpperCase();
+      for (let i = 0; i < txt.length; i += 1) {
+        const code = txt.charCodeAt(i);
+        if (code < 65 || code > 90) continue;
+        idx = idx * 26 + (code - 64);
+      }
+      return idx;
+    }
+
+    function colIndexToLetters(idx) {
+      let n = Math.max(1, Math.floor(Number(idx) || 1));
+      let out = '';
+      while (n > 0) {
+        const rem = (n - 1) % 26;
+        out = String.fromCharCode(65 + rem) + out;
+        n = Math.floor((n - 1) / 26);
+      }
+      return out;
+    }
+
+    function parseA1Ref(a1) {
+      const m = /^([A-Z]+)(\d+)$/.exec(String(a1 || '').toUpperCase());
+      if (!m) return null;
+      return { col: m[1], row: Number(m[2]) };
+    }
+
+    function shiftA1RefRows(a1, fromRowNum, delta) {
+      const p = parseA1Ref(a1);
+      if (!p) return a1;
+      const nextRow = p.row >= fromRowNum ? p.row + delta : p.row;
+      return `${p.col}${nextRow}`;
+    }
+
+    function shiftRangeRefRows(rangeRef, fromRowNum, delta) {
+      const txt = String(rangeRef || '').trim();
+      if (!txt) return txt;
+      if (!txt.includes(':')) return shiftA1RefRows(txt, fromRowNum, delta);
+      const [start, end] = txt.split(':');
+      return `${shiftA1RefRows(start, fromRowNum, delta)}:${shiftA1RefRows(end, fromRowNum, delta)}`;
+    }
+
+    function shiftSqrefRows(sqref, fromRowNum, delta) {
+      return String(sqref || '')
+        .split(/\s+/)
+        .filter(Boolean)
+        .map((tok) => shiftRangeRefRows(tok, fromRowNum, delta))
+        .join(' ');
+    }
+
+    function expandFormulaRangesAtInsertBoundary(formulaText, fromRowNum, delta) {
+      const txt = String(formulaText ?? '');
+      if (!txt || !Number.isFinite(fromRowNum) || !Number.isFinite(delta) || delta <= 0) return txt;
+      const targetEnd = fromRowNum - 1;
+      const rangeRx = /((?:'[^']+'|[^'!\s:+\-*/^&(),]{1,64})!)?(\$?[A-Z]{1,3})(\$?)(\d+):(\$?[A-Z]{1,3})(\$?)(\d+)/g;
+      return txt.replace(rangeRx, (m, sheetPrefix = '', c1 = '', rd1 = '', r1 = '', c2 = '', rd2 = '', r2 = '') => {
+        const startRow = Number(r1);
+        const endRow = Number(r2);
+        if (!Number.isFinite(startRow) || !Number.isFinite(endRow)) return m;
+        if (endRow !== targetEnd || startRow >= fromRowNum) return m;
+        return `${sheetPrefix || ''}${c1}${rd1}${startRow}:${c2}${rd2}${endRow + delta}`;
+      });
+    }
+
+    function shiftFormulaRows(formulaText, fromRowNum, delta) {
+      const txt = String(formulaText ?? '');
+      if (!txt) return txt;
+      const cellRefRx = /((?:'[^']+'|[^'!\s:+\-*/^&(),]{1,64})!)?(\$?[A-Z]{1,3})(\$?)(\d+)/g;
+      return txt.replace(cellRefRx, (m, sheetPrefix = '', colPart = '', rowDollar = '', rowDigits = '') => {
+        const rowNum = Number(rowDigits);
+        if (!Number.isFinite(rowNum) || rowNum < fromRowNum) return m;
+        return `${sheetPrefix || ''}${colPart || ''}${rowDollar || ''}${rowNum + delta}`;
+      });
+    }
+
+    function sanitizeXmlText(text) {
+      return String(text ?? '').replace(/[\x00-\x08\x0B\x0C\x0E-\x1F\x7F-\x9F]/g, '');
+    }
+
+    function updateRowSpans(rowNode) {
+      if (!rowNode) return;
+      let min = Infinity;
+      let max = -Infinity;
+      [...rowNode.querySelectorAll('c')].forEach((c) => {
+        const m = /^([A-Z]+)\d+$/.exec(c.getAttribute('r') || '');
+        if (!m) return;
+        const idx = colLettersToIndex(m[1]);
+        if (!idx) return;
+        if (idx < min) min = idx;
+        if (idx > max) max = idx;
+      });
+      if (!Number.isFinite(min) || !Number.isFinite(max)) {
+        rowNode.removeAttribute('spans');
+      } else {
+        rowNode.setAttribute('spans', `${min}:${max}`);
+      }
+    }
+
+    function refreshSheetDimension(sheetDoc) {
+      if (!sheetDoc) return;
+      let maxRow = 1;
+      let maxCol = 1;
+      [...sheetDoc.querySelectorAll('worksheet > sheetData > row')].forEach((rowNode) => {
+        const rowNum = Number(rowNode.getAttribute('r') || 0);
+        if (Number.isFinite(rowNum) && rowNum > maxRow) maxRow = rowNum;
+        updateRowSpans(rowNode);
+        [...rowNode.querySelectorAll('c')].forEach((cellNode) => {
+          const m = /^([A-Z]+)(\d+)$/.exec(cellNode.getAttribute('r') || '');
+          if (!m) return;
+          const col = colLettersToIndex(m[1]);
+          const r = Number(m[2]);
+          if (col > maxCol) maxCol = col;
+          if (r > maxRow) maxRow = r;
+        });
+      });
+
+      let dimNode = sheetDoc.querySelector('worksheet > dimension');
+      if (!dimNode) {
+        const worksheetNode = sheetDoc.querySelector('worksheet');
+        if (!worksheetNode) return;
+        dimNode = createSheetNode(sheetDoc, 'dimension');
+        const firstChild = worksheetNode.firstElementChild;
+        if (firstChild) worksheetNode.insertBefore(dimNode, firstChild);
+        else worksheetNode.appendChild(dimNode);
+      }
+      dimNode.setAttribute('ref', `A1:${colIndexToLetters(maxCol)}${maxRow}`);
+    }
+
+    function ensureSheetRow(sheetDoc, rowNum) {
+      const sheetData = sheetDoc.querySelector('worksheet > sheetData');
+      if (!sheetData) return null;
+      let rowNode = sheetData.querySelector(`row[r="${rowNum}"]`);
+      if (rowNode) return rowNode;
+
+      rowNode = createSheetNode(sheetDoc, 'row');
+      rowNode.setAttribute('r', String(rowNum));
+      const nextNode = [...sheetData.querySelectorAll('row')]
+        .find((n) => Number(n.getAttribute('r') || 0) > rowNum);
+      if (nextNode) sheetData.insertBefore(rowNode, nextNode);
+      else sheetData.appendChild(rowNode);
+      return rowNode;
+    }
+
+    function ensureSheetCell(sheetDoc, rowNode, rowNum, colLetter) {
+      const cellRefA1 = `${colLetter}${rowNum}`;
+      let cellNode = rowNode.querySelector(`c[r="${cellRefA1}"]`);
+      if (cellNode) return cellNode;
+
+      cellNode = createSheetNode(sheetDoc, 'c');
+      cellNode.setAttribute('r', cellRefA1);
+      const targetCol = colLettersToIndex(colLetter);
+      const nextCell = [...rowNode.querySelectorAll('c')].find((n) => {
+        const m = /^([A-Z]+)\d+$/.exec(n.getAttribute('r') || '');
+        return m ? colLettersToIndex(m[1]) > targetCol : false;
+      });
+      if (nextCell) rowNode.insertBefore(cellNode, nextCell);
+      else rowNode.appendChild(cellNode);
+      updateRowSpans(rowNode);
+      return cellNode;
+    }
+
+    function setSheetCellNumber(sheetDoc, rowIdxZeroBased, colLetter, value) {
+      const rowNum = rowIdxZeroBased + 1;
+      const rowNode = ensureSheetRow(sheetDoc, rowNum);
+      if (!rowNode) return;
+      const cellNode = ensureSheetCell(sheetDoc, rowNode, rowNum, colLetter);
+
+      cellNode.removeAttribute('t');
+      const inline = cellNode.querySelector('is');
+      if (inline) inline.remove();
+
+      const formulaNode = cellNode.querySelector('f');
+      if (formulaNode) formulaNode.remove();
+
+      let vNode = cellNode.querySelector('v');
+      if (!vNode) {
+        vNode = createSheetNode(sheetDoc, 'v');
+        cellNode.appendChild(vNode);
+      }
+      vNode.textContent = String(Number.isFinite(value) ? value : 0);
+    }
+
+    function setSheetCellText(sheetDoc, rowIdxZeroBased, colLetter, text) {
+      const rowNum = rowIdxZeroBased + 1;
+      const rowNode = ensureSheetRow(sheetDoc, rowNum);
+      if (!rowNode) return;
+      const cellNode = ensureSheetCell(sheetDoc, rowNode, rowNum, colLetter);
+
+      const fNode = cellNode.querySelector('f');
+      if (fNode) fNode.remove();
+      const vNode = cellNode.querySelector('v');
+      if (vNode) vNode.remove();
+
+      cellNode.setAttribute('t', 'inlineStr');
+      let isNode = cellNode.querySelector('is');
+      if (!isNode) {
+        isNode = createSheetNode(sheetDoc, 'is');
+        cellNode.appendChild(isNode);
+      }
+      let tNode = isNode.querySelector('t');
+      if (!tNode) {
+        tNode = createSheetNode(sheetDoc, 't');
+        isNode.appendChild(tNode);
+      }
+      tNode.setAttribute('xml:space', 'preserve');
+      tNode.textContent = sanitizeXmlText(text);
+    }
+    function getCellStyleRef(sheetDoc, rowNum, colLetter) {
+      const cell = sheetDoc.querySelector(`worksheet > sheetData > row[r="${rowNum}"] > c[r="${colLetter}${rowNum}"]`);
+      return cell?.getAttribute('s') || null;
+    }
+
+    function applyCellStyle(sheetDoc, rowIdxZero, colLetter, styleRef) {
+      if (!styleRef) return;
+      const rowNum = rowIdxZero + 1;
+      const cell = sheetDoc.querySelector(`worksheet > sheetData > row[r="${rowNum}"] > c[r="${colLetter}${rowNum}"]`);
+      if (cell) cell.setAttribute('s', styleRef);
+    }
+
+    function shiftRowsDown(sheetDoc, fromRowNum, count) {
+      if (!Number.isFinite(fromRowNum) || !Number.isFinite(count) || count <= 0) return;
+      const rows = [...sheetDoc.querySelectorAll('worksheet > sheetData > row')]
+        .map((n) => ({ n, r: Number(n.getAttribute('r') || 0) }))
+        .filter(({ r }) => Number.isFinite(r) && r >= fromRowNum)
+        .sort((a, b) => b.r - a.r);
+      rows.forEach(({ n, r }) => {
+        n.setAttribute('r', String(r + count));
+        [...n.querySelectorAll('c')].forEach((c) => {
+          const ref = c.getAttribute('r') || '';
+          const m = /^([A-Z]+)(\d+)$/.exec(ref);
+          if (!m) return;
+          c.setAttribute('r', `${m[1]}${Number(m[2]) + count}`);
+        });
+      });
+
+      [...sheetDoc.querySelectorAll('worksheet f')].forEach((f) => {
+        const ref = f.getAttribute('ref');
+        if (ref) f.setAttribute('ref', shiftRangeRefRows(ref, fromRowNum, count));
+        const formulaText = f.textContent || '';
+        if (formulaText) {
+          const shifted = shiftFormulaRows(formulaText, fromRowNum, count);
+          f.textContent = expandFormulaRangesAtInsertBoundary(shifted, fromRowNum, count);
+        }
+      });
+
+      [...sheetDoc.querySelectorAll('worksheet mergeCells > mergeCell[ref]')].forEach((n) => {
+        const ref = n.getAttribute('ref');
+        if (!ref) return;
+        n.setAttribute('ref', shiftRangeRefRows(ref, fromRowNum, count));
+      });
+
+      [...sheetDoc.querySelectorAll('worksheet *[sqref]')].forEach((n) => {
+        const sqref = n.getAttribute('sqref');
+        if (!sqref) return;
+        n.setAttribute('sqref', shiftSqrefRows(sqref, fromRowNum, count));
+      });
+
+      [...sheetDoc.querySelectorAll('worksheet autoFilter[ref], worksheet hyperlink[ref], worksheet dataTable[ref]')].forEach((n) => {
+        const ref = n.getAttribute('ref');
+        if (!ref) return;
+        n.setAttribute('ref', shiftRangeRefRows(ref, fromRowNum, count));
+      });
+    }
+
+    function pickRosterStyleSourceRow(sheetDoc, anchorRowNum, insertAt, totalRowNum) {
+      const upper = Math.max(1, Math.min(insertAt - 1, Number.isFinite(anchorRowNum) ? anchorRowNum : insertAt - 1));
+      for (let r = upper; r >= 1; r -= 1) {
+        if (Number.isFinite(totalRowNum) && r === totalRowNum) continue;
+        const grade = trimText(sheetDoc.querySelector(`worksheet > sheetData > row[r="${r}"] > c[r="C${r}"] > is > t`)?.textContent
+          || sheetDoc.querySelector(`worksheet > sheetData > row[r="${r}"] > c[r="C${r}"] > v`)?.textContent || '');
+        if (grade) return r;
+      }
+      return Math.max(1, insertAt - 1);
+    }
+
+    function insertCustomRosterRowsNearAnchor(sheetDoc, anchorRowNum, rows, totalRowNum = null) {
+      if (!rows.length) return;
+      const insertAt = Number.isFinite(totalRowNum) ? Math.max(1, totalRowNum) : Math.max(1, anchorRowNum);
+      const styleRow = pickRosterStyleSourceRow(sheetDoc, anchorRowNum, insertAt, totalRowNum);
+      const styleA = getCellStyleRef(sheetDoc, styleRow, 'A');
+      const styleC = getCellStyleRef(sheetDoc, styleRow, 'C');
+      const styleM = getCellStyleRef(sheetDoc, styleRow, 'M');
+      const styleR = getCellStyleRef(sheetDoc, styleRow, 'R');
+
+      shiftRowsDown(sheetDoc, insertAt, rows.length);
+
+      rows.forEach((row, idx) => {
+        const rowNum = insertAt + idx;
+        const rowIdx = rowNum - 1;
+        setSheetCellText(sheetDoc, rowIdx, 'A', row.title || '');
+        setSheetCellText(sheetDoc, rowIdx, 'C', row.grade || '');
+        setSheetCellNumber(sheetDoc, rowIdx, 'G', 0);
+        setSheetCellNumber(sheetDoc, rowIdx, 'I', 0);
+        setSheetCellNumber(sheetDoc, rowIdx, 'K', 0);
+        setSheetCellNumber(sheetDoc, rowIdx, 'M', Number.isFinite(row.value) ? row.value : 0);
+        if (trimText(row.note || '')) setSheetCellText(sheetDoc, rowIdx, 'R', row.note);
+        applyCellStyle(sheetDoc, rowIdx, 'A', styleA);
+        applyCellStyle(sheetDoc, rowIdx, 'C', styleC);
+        applyCellStyle(sheetDoc, rowIdx, 'G', styleM);
+        applyCellStyle(sheetDoc, rowIdx, 'I', styleM);
+        applyCellStyle(sheetDoc, rowIdx, 'K', styleM);
+        applyCellStyle(sheetDoc, rowIdx, 'M', styleM);
+        applyCellStyle(sheetDoc, rowIdx, 'R', styleR);
+      });
+    }
+
+    function enforceWorkbookLinkPromptOff(workbookXmlDoc) {
+      if (!workbookXmlDoc) return;
+      const workbookNode = workbookXmlDoc.querySelector('workbook');
+      if (!workbookNode) return;
+
+      let workbookPr = workbookNode.querySelector('workbookPr');
+      if (!workbookPr) {
+        workbookPr = createXmlNode(workbookXmlDoc, 'workbookPr');
+        const firstChild = workbookNode.firstElementChild;
+        if (firstChild) workbookNode.insertBefore(workbookPr, firstChild);
+        else workbookNode.appendChild(workbookPr);
+      }
+      workbookPr.setAttribute('updateLinks', 'never');
+    }
+
+    function enforceRecalcOnOpen(workbookXmlDoc) {
+      if (!workbookXmlDoc) return;
+      const workbookNode = workbookXmlDoc.querySelector('workbook');
+      if (!workbookNode) return;
+
+      let calcPr = workbookNode.querySelector('calcPr');
+      if (!calcPr) {
+        calcPr = createXmlNode(workbookXmlDoc, 'calcPr');
+        workbookNode.appendChild(calcPr);
+      }
+      calcPr.setAttribute('calcMode', 'auto');
+      calcPr.setAttribute('fullCalcOnLoad', '1');
+      calcPr.setAttribute('forceFullCalc', '1');
+      calcPr.setAttribute('calcOnSave', '1');
+      calcPr.setAttribute('calcCompleted', '0');
+    }
+
+    function removeCalcChainArtifacts(zip, workbookXmlDoc, relsXmlDoc, contentTypesDoc) {
+      const rels = [...relsXmlDoc.querySelectorAll('Relationship')];
+      const calcRel = rels.find((rel) => (rel.getAttribute('Type') || '').includes('/calcChain'));
+      if (!calcRel) return;
+
+      const relId = calcRel.getAttribute('Id');
+      const target = calcRel.getAttribute('Target') || 'calcChain.xml';
+      const calcPath = target.startsWith('/') ? target.slice(1) : `xl/${target.replace(/^\.\//, '')}`;
+
+      calcRel.remove();
+      zip.file('xl/_rels/workbook.xml.rels', new XMLSerializer().serializeToString(relsXmlDoc));
+
+      const workbookNode = workbookXmlDoc.querySelector('workbook');
+      if (workbookNode && relId) {
+        const namespace = 'http://schemas.openxmlformats.org/officeDocument/2006/relationships';
+        const calcRefNodes = [...workbookNode.querySelectorAll('*')].filter((n) => n.getAttributeNS(namespace, 'id') === relId || n.getAttribute('r:id') === relId);
+        calcRefNodes.forEach((n) => n.remove());
+      }
+      zip.file('xl/workbook.xml', new XMLSerializer().serializeToString(workbookXmlDoc));
+
+      if (contentTypesDoc) {
+        [...contentTypesDoc.querySelectorAll('Override')].forEach((node) => {
+          const part = node.getAttribute('PartName') || '';
+          if (part === '/xl/calcChain.xml') node.remove();
+        });
+        zip.file('[Content_Types].xml', new XMLSerializer().serializeToString(contentTypesDoc));
+      }
+
+      zip.remove(calcPath);
+      zip.remove('xl/calcChain.xml');
+    }
+
+
+    function pickBudgetStyleSourceRow(sheetDoc, anchorRowNum, insertAt, totalRowNum) {
+      const upper = Math.max(1, Math.min(insertAt - 1, Number.isFinite(anchorRowNum) ? anchorRowNum : insertAt - 1));
+      for (let r = upper; r >= 1; r -= 1) {
+        if (Number.isFinite(totalRowNum) && r === totalRowNum) continue;
+        const desc = trimText(sheetDoc.querySelector(`worksheet > sheetData > row[r="${r}"] > c[r="A${r}"] > is > t`)?.textContent
+          || sheetDoc.querySelector(`worksheet > sheetData > row[r="${r}"] > c[r="A${r}"] > v`)?.textContent || '');
+        if (desc) return r;
+      }
+      return Math.max(1, insertAt - 1);
+    }
+
+    function insertCustomBudgetRowsNearAnchor(sheetDoc, anchorRowNum, rows, totalRowNum = null) {
+      if (!rows.length) return;
+      const insertAt = Number.isFinite(totalRowNum) ? Math.max(1, totalRowNum) : Math.max(1, anchorRowNum);
+
+      shiftRowsDown(sheetDoc, insertAt, rows.length);
+      rows.forEach((row, idx) => {
+        const rowIdx = insertAt + idx - 1;
+        const parentStyleRow = Number.isFinite(row.parentSourceRow) ? row.parentSourceRow : null;
+        const anchorStyleRow = Number.isFinite(row.beforeSourceRow) ? row.beforeSourceRow : null;
+        const styleRow = Number.isFinite(parentStyleRow)
+          ? parentStyleRow
+          : (Number.isFinite(anchorStyleRow)
+            ? anchorStyleRow
+            : pickBudgetStyleSourceRow(sheetDoc, anchorRowNum, insertAt, totalRowNum));
+        const styleA = getCellStyleRef(sheetDoc, styleRow, 'A');
+        const styleC = getCellStyleRef(sheetDoc, styleRow, 'C');
+        const styleD = getCellStyleRef(sheetDoc, styleRow, 'D');
+        const styleG = getCellStyleRef(sheetDoc, styleRow, 'G');
+        const styleI = getCellStyleRef(sheetDoc, styleRow, 'I');
+        const styleK = getCellStyleRef(sheetDoc, styleRow, 'K');
+        const styleM = getCellStyleRef(sheetDoc, styleRow, 'M');
+        const styleR = getCellStyleRef(sheetDoc, styleRow, 'R');
+        setSheetCellText(sheetDoc, rowIdx, 'A', row.description || '');
+        if (trimText(row.obj || '')) setSheetCellText(sheetDoc, rowIdx, 'C', row.obj);
+        if (trimText(row.proj || '')) setSheetCellText(sheetDoc, rowIdx, 'D', row.proj);
+        setSheetCellNumber(sheetDoc, rowIdx, 'G', 0);
+        setSheetCellNumber(sheetDoc, rowIdx, 'I', 0);
+        setSheetCellNumber(sheetDoc, rowIdx, 'K', 0);
+        setSheetCellNumber(sheetDoc, rowIdx, 'M', Number.isFinite(row.value) ? row.value : 0);
+        if (trimText(row.note || '')) setSheetCellText(sheetDoc, rowIdx, 'R', row.note);
+        applyCellStyle(sheetDoc, rowIdx, 'A', styleA);
+        applyCellStyle(sheetDoc, rowIdx, 'C', styleC);
+        applyCellStyle(sheetDoc, rowIdx, 'D', styleD || styleC);
+        applyCellStyle(sheetDoc, rowIdx, 'G', styleG || styleM);
+        applyCellStyle(sheetDoc, rowIdx, 'I', styleI || styleM);
+        applyCellStyle(sheetDoc, rowIdx, 'K', styleK || styleM);
+        applyCellStyle(sheetDoc, rowIdx, 'M', styleM);
+        applyCellStyle(sheetDoc, rowIdx, 'R', styleR);
+      });
+    }
+
+    function readSheetCellText(sheetDoc, rowNum, colLetter, sharedStrings = []) {
+      const cell = sheetDoc.querySelector(`worksheet > sheetData > row[r="${rowNum}"] > c[r="${colLetter}${rowNum}"]`);
+      if (!cell) return '';
+      if (cell.getAttribute('t') === 's') {
+        const idx = Number(cell.querySelector('v')?.textContent || NaN);
+        return trimText(Number.isFinite(idx) ? (sharedStrings[idx] || '') : '');
+      }
+      const inline = cell.querySelector('is > t')?.textContent;
+      if (inline != null) return trimText(inline);
+      return trimText(cell.querySelector('v')?.textContent || '');
+    }
+
+    function findBudgetInsertRowByOrderInSheet(sheetDoc, section, row, sharedStrings = []) {
+      const targetOrder = parseAccountOrderValue(row?.obj || row?.proj || '');
+      if (!Number.isFinite(targetOrder)) return null;
+      const sectionStartRow = findSectionBodyStartRowInSheet(sheetDoc, section, sharedStrings);
+      if (!Number.isFinite(sectionStartRow)) return null;
+      const sectionTotalRow = findSectionTotalRowInSheet(sheetDoc, section, sharedStrings);
+      const maxRow = [...sheetDoc.querySelectorAll('worksheet > sheetData > row')]
+        .reduce((m, n) => Math.max(m, Number(n.getAttribute('r') || 0)), 1);
+      const endRow = Number.isFinite(sectionTotalRow) ? Math.max(sectionStartRow, sectionTotalRow - 1) : maxRow;
+
+      for (let rowNum = sectionStartRow; rowNum <= endRow; rowNum += 1) {
+        const label = readSheetCellText(sheetDoc, rowNum, 'A', sharedStrings);
+        if (!label || /^total\b/i.test(label)) continue;
+        const rowOrder = parseAccountOrderValue(readSheetCellText(sheetDoc, rowNum, 'C', sharedStrings) || readSheetCellText(sheetDoc, rowNum, 'D', sharedStrings));
+        if (!Number.isFinite(rowOrder)) continue;
+        if (targetOrder < rowOrder) return rowNum;
+      }
+
+      if (Number.isFinite(sectionTotalRow)) return sectionTotalRow;
+      return endRow + 1;
+    }
+
+    function findSectionBodyStartRowInSheet(sheetDoc, section, sharedStrings = []) {
+      const headerPattern = section === 'personnel' ? /^personnel\s+services$/i : /^operating\s+expenditures$/i;
+      const totalPattern = section === 'personnel' ? /^total\s+personnel\s+services$/i : /^total\s+operating\s+expenditures$/i;
+      const totalRow = findSectionTotalRowInSheet(sheetDoc, section, sharedStrings);
+      const rows = [...sheetDoc.querySelectorAll('worksheet > sheetData > row')]
+        .map((n) => Number(n.getAttribute('r') || 0))
+        .filter((n) => Number.isFinite(n) && n > 0)
+        .sort((a, b) => a - b);
+
+      let headerRow = null;
+      rows.forEach((r) => {
+        const txt = readSheetCellText(sheetDoc, r, 'A', sharedStrings);
+        if (headerPattern.test(txt)) headerRow = r;
+      });
+
+      for (const r of rows) {
+        if (Number.isFinite(headerRow) && r <= headerRow) continue;
+        if (Number.isFinite(totalRow) && r >= totalRow) continue;
+        const txt = readSheetCellText(sheetDoc, r, 'A', sharedStrings);
+        if (!txt || headerPattern.test(txt) || totalPattern.test(txt) || /^total\s*budget$/i.test(txt)) continue;
+        return r;
+      }
+      return null;
+    }
+
+    function findSectionTotalRowInSheet(sheetDoc, section, sharedStrings = []) {
+      const target = section === 'personnel' ? /^total\s+personnel\s+services$/i : /^total\s+operating\s+expenditures$/i;
+      const rows = [...sheetDoc.querySelectorAll('worksheet > sheetData > row')];
+      for (const row of rows) {
+        const r = Number(row.getAttribute('r') || 0);
+        if (!Number.isFinite(r) || r <= 0) continue;
+        const txt = readSheetCellText(sheetDoc, r, 'A', sharedStrings);
+        if (target.test(txt)) return r;
+      }
+      return null;
+    }
+
+    function findTotalBudgetRowInSheet(sheetDoc, sharedStrings = []) {
+      const rows = [...sheetDoc.querySelectorAll('worksheet > sheetData > row')];
+      for (const row of rows) {
+        const r = Number(row.getAttribute('r') || 0);
+        if (!Number.isFinite(r) || r <= 0) continue;
+        const txt = readSheetCellText(sheetDoc, r, 'A', sharedStrings);
+        if (/^total\s*budget$/i.test(txt)) return r;
+      }
+      return null;
+    }
+
+    function findRosterInsertionAnchorRows(dept, bucket) {
+      const target = bucket === 'part-time' ? 'part-time' : 'full-time';
+      const roster = dept?.sections?.roster || [];
+      const sourceRows = roster.filter((r) => typeof r.sourceRow === 'number');
+      const header = sourceRows.find((r) => r.isHeader && (r.rosterBucket || 'full-time') === target);
+      if (!header) {
+        const total = sourceRows.find((r) => r.isTotal);
+        const body = sourceRows.filter((r) => !r.isHeader && !r.isTotal);
+        const anchor = body[body.length - 1];
+        return { anchorRow: anchor?.sourceRow, totalRow: total?.sourceRow };
+      }
+
+      let nextHeaderRow = Infinity;
+      sourceRows.forEach((r) => {
+        if (r.isHeader && r.sourceRow > header.sourceRow && r.sourceRow < nextHeaderRow) nextHeaderRow = r.sourceRow;
+      });
+
+      const inBucket = sourceRows.filter((r) => r.sourceRow > header.sourceRow && r.sourceRow < nextHeaderRow);
+      const total = inBucket.find((r) => r.isTotal);
+      const body = inBucket.filter((r) => !r.isHeader && !r.isTotal);
+      const anchor = body[body.length - 1];
+      return { anchorRow: anchor?.sourceRow || header.sourceRow, totalRow: total?.sourceRow };
+    }
+
+    async function exportWorkbook() {
+      if (!selectedFile) return;
+      const data = await selectedFile.arrayBuffer();
+      const exportName = buildExportFilename(selectedFile.name);
+      const hasAnyNotes = [...itemNotes.values()].some((v) => trimText(v));
+      const hasCustomRows = departments.some((dept) =>
+        ['personnel', 'operating', 'roster'].some((section) => (dept?.sections?.[section] || []).some((r) => !!r?.isCustom))
+      );
+
+      if (edited2027.size === 0 && !hasAnyNotes && !hasCustomRows) {
+        downloadBlob(new Blob([data]), exportName);
+        return;
+      }
+
+      const zip = await JSZip.loadAsync(data);
+      const workbookXmlText = await zip.file('xl/workbook.xml')?.async('string');
+      const relsXmlText = await zip.file('xl/_rels/workbook.xml.rels')?.async('string');
+      const contentTypesText = await zip.file('[Content_Types].xml')?.async('string');
+      if (!workbookXmlText || !relsXmlText) {
+        downloadBlob(new Blob([data]), exportName);
+        return;
+      }
+
+      const parser = new DOMParser();
+      const serializer = new XMLSerializer();
+      const sharedStrings = await buildSharedStrings(zip, parser);
+      const workbookXmlDoc = parser.parseFromString(workbookXmlText, 'application/xml');
+      const relsXmlDoc = parser.parseFromString(relsXmlText, 'application/xml');
+      const contentTypesDoc = contentTypesText ? parser.parseFromString(contentTypesText, 'application/xml') : null;
+      enforceWorkbookLinkPromptOff(workbookXmlDoc);
+      enforceRecalcOnOpen(workbookXmlDoc);
+      zip.file('xl/workbook.xml', serializer.serializeToString(workbookXmlDoc));
+
+      const pathMap = buildSheetPathMap(workbookXmlDoc, relsXmlDoc);
+
+      for (const dept of departments) {
+        const updates = getEditedRowsByDepartment(dept);
+        if (!updates.values.length && !updates.notes.length && !updates.customRows.length && !updates.customAccountRows.length) continue;
+
+        const path = pathMap.get(dept.rawSheetName) || pathMap.get(trimText(dept.rawSheetName)) || pathMap.get(dept.sheetName);
+        if (!path) continue;
+
+        const sheetFile = zip.file(path);
+        if (!sheetFile) continue;
+        const sheetXmlText = await sheetFile.async('string');
+        const sheetDoc = parser.parseFromString(sheetXmlText, 'application/xml');
+
+        updates.values.forEach(({ rowIdx, value }) => setSheetCellNumber(sheetDoc, rowIdx, 'M', value));
+        const mergedNotes = new Map();
+        updates.notes.forEach(({ rowIdx, note }) => {
+          const prev = mergedNotes.get(rowIdx);
+          mergedNotes.set(rowIdx, prev ? `${prev} | ${note}` : note);
+        });
+        [...mergedNotes.entries()].forEach(([rowIdx, note]) => setSheetCellText(sheetDoc, rowIdx, 'R', note));
+
+        if (updates.customAccountRows.length) {
+          ['operating', 'personnel'].forEach((section) => {
+            const rows = updates.customAccountRows.filter((r) => r.section === section);
+            if (!rows.length) return;
+            const byOrder = [...rows].sort((a, b) => parseAccountOrderValue(a.obj || a.proj) - parseAccountOrderValue(b.obj || b.proj));
+            let insertedAtRows = [];
+            const shiftAdjustedRow = (rowNum) => {
+              if (!Number.isFinite(rowNum)) return rowNum;
+              const shifts = insertedAtRows.reduce((sum, at) => sum + (at <= rowNum ? 1 : 0), 0);
+              return rowNum + shifts;
+            };
+
+            byOrder.forEach((row) => {
+              const adjustedBefore = shiftAdjustedRow(row.beforeSourceRow);
+              const adjustedParent = shiftAdjustedRow(row.parentSourceRow);
+              const exportRow = { ...row, beforeSourceRow: adjustedBefore, parentSourceRow: adjustedParent };
+              let insertRow = null;
+              if (row.customKind === 'subproject' && Number.isFinite(adjustedBefore)) {
+                insertRow = adjustedBefore;
+              } else {
+                insertRow = findBudgetInsertRowByOrderInSheet(sheetDoc, section, row, sharedStrings);
+                if (!Number.isFinite(insertRow) && Number.isFinite(adjustedBefore)) insertRow = adjustedBefore;
+              }
+
+              if (!Number.isFinite(insertRow)) {
+                const sectionStartRow = findSectionBodyStartRowInSheet(sheetDoc, section, sharedStrings);
+                if (Number.isFinite(sectionStartRow)) insertRow = sectionStartRow;
+              }
+              if (!Number.isFinite(insertRow)) {
+                const sectionTotalRow = findSectionTotalRowInSheet(sheetDoc, section, sharedStrings);
+                if (Number.isFinite(sectionTotalRow)) insertRow = sectionTotalRow;
+              }
+              if (!Number.isFinite(insertRow)) {
+                const totalBudgetRow = findTotalBudgetRowInSheet(sheetDoc, sharedStrings);
+                if (Number.isFinite(totalBudgetRow)) insertRow = totalBudgetRow;
+              }
+              if (!Number.isFinite(insertRow)) {
+                const maxRow = [...sheetDoc.querySelectorAll('worksheet > sheetData > row')].reduce((m,n)=>Math.max(m, Number(n.getAttribute('r')||0)), 1);
+                insertRow = maxRow + 1;
+              }
+              insertCustomBudgetRowsNearAnchor(sheetDoc, insertRow, [exportRow], null);
+              insertedAtRows.push(insertRow);
+            });
+          });
+        }
+
+        if (updates.customRows.length) {
+          const partTimeRows = updates.customRows.filter((r) => (r.bucket || 'full-time') === 'part-time');
+          const fullTimeRows = updates.customRows.filter((r) => (r.bucket || 'full-time') !== 'part-time');
+
+          const insertBucketRows = (bucket, rows) => {
+            if (!rows.length) return;
+            const anchor = findRosterInsertionAnchorRows(dept, bucket);
+            if (anchor.anchorRow !== undefined) insertCustomRosterRowsNearAnchor(sheetDoc, anchor.anchorRow + 1, rows, anchor.totalRow);
+          };
+
+          // Insert lower section first so earlier section anchors are not shifted before use.
+          insertBucketRows('part-time', partTimeRows);
+          insertBucketRows('full-time', fullTimeRows);
+        }
+
+        refreshSheetDimension(sheetDoc);
+        zip.file(path, serializer.serializeToString(sheetDoc));
+      }
+
+      removeCalcChainArtifacts(zip, workbookXmlDoc, relsXmlDoc, contentTypesDoc);
+
+      const outBlob = await zip.generateAsync({ type: 'blob', compression: 'DEFLATE', compressionOptions: { level: 6 } });
+      downloadBlob(outBlob, exportName);
+    }
+
+    async function handleNext() {
+      if (!selectedFile) return;
+      el.nextBtn.disabled = true;
+      el.fileMeta.textContent = 'Processing...';
+      try {
+        departments = await parseWorkbook(selectedFile);
+        edited2027.clear();
+        hydrateNotesFromWorkbook();
+        fillDepartmentOptions();
+        el.deptSelect.value = "__all__";
+        activeSection = 'personnel';
+        selectedItem = null;
+        el.tabBtns.forEach((btn) => btn.classList.toggle('active', btn.dataset.section === activeSection));
+        updateSectionEditToggleButton();
+        renderData();
+        show(el.workspace);
+        el.exportBtn.disabled = false;
+      } catch (error) {
+        console.error(error);
+        el.fileMeta.textContent = 'Unable to read spreadsheet.';
+      } finally {
+        el.nextBtn.disabled = !selectedFile;
+      }
+    }
+
+    el.start.addEventListener('click', () => show(el.upload));
+    el.homeUpload.addEventListener('click', () => show(el.home));
+    el.about.addEventListener('click', () => el.modal.classList.add('open'));
+    el.closeAbout.addEventListener('click', () => el.modal.classList.remove('open'));
+    el.modal.addEventListener('click', (e) => { if (e.target === el.modal) el.modal.classList.remove('open'); });
+
+    el.pickBtn.addEventListener('click', () => el.fileInput.click());
+    el.dropZone.addEventListener('click', () => el.fileInput.click());
+    el.dropZone.addEventListener('keydown', (e) => { if (e.key === 'Enter' || e.key === ' ') el.fileInput.click(); });
+    el.fileInput.addEventListener('change', (e) => setFile(e.target.files?.[0]));
+    ['dragenter', 'dragover'].forEach((type) => el.dropZone.addEventListener(type, (e) => { e.preventDefault(); e.stopPropagation(); el.dropZone.classList.add('dragging'); }));
+    ['dragleave', 'drop'].forEach((type) => el.dropZone.addEventListener(type, (e) => { e.preventDefault(); e.stopPropagation(); el.dropZone.classList.remove('dragging'); }));
+    el.dropZone.addEventListener('drop', (e) => setFile(e.dataTransfer.files?.[0]));
+
+    el.proposalSlider.addEventListener('input', (e) => {
+      if (!selectedItem?.row) return;
+      const { adopted, proposal: currentProposal } = getSelectionValues();
+      const val = Number(e.target.value || 0);
+      if (selectedItem.section === 'roster') return;
+      const isCustomZeroBase = !!selectedItem.row?.isCustom && Math.abs(adopted) < 0.000001;
+      const base = Number(selectedItem.sliderBase ?? (Math.abs(currentProposal) < 0.000001 ? 1 : currentProposal));
+      const proposal = isCustomZeroBase ? base + (base * val / 100) : adopted + (adopted * val / 100);
+      applyProposalValue(proposal);
+    });
+
+    el.amountInput.addEventListener('change', (e) => {
+      if (!selectedItem?.row) return;
+      const { adopted } = getSelectionValues();
+      const typed = Number(e.target.value || 0);
+      if (selectedItem.section === 'roster') {
+        applyProposalValue(Math.max(0, Math.round(adopted + typed)));
+        return;
+      }
+      const currentDelta = getSelectionValues().proposal - adopted;
+      const sign = Number.isFinite(typed) && typed < 0 ? -1 : (currentDelta < 0 ? -1 : 1);
+      const delta = Math.abs(Number.isFinite(typed) ? typed : 0) * sign;
+      applyProposalValue(adopted + delta);
+    });
+
+    el.percentInput.addEventListener('change', (e) => {
+      if (!selectedItem?.row) return;
+      const { adopted } = getSelectionValues();
+      const val = Number(e.target.value || 0);
+      if (selectedItem.section === 'roster') {
+        applyProposalValue(Math.max(0, Math.round(val)));
+        return;
+      }
+      applyProposalValue(adopted + (adopted * val / 100));
+    });
+
+    el.rosterStepUp?.addEventListener('click', () => { if (!selectedItem?.row || selectedItem.section !== 'roster') return; const { proposal } = getSelectionValues(); applyProposalValue(Math.max(0, Math.round(proposal + 1))); });
+    el.rosterStepDown?.addEventListener('click', () => { if (!selectedItem?.row || selectedItem.section !== 'roster') return; const { proposal } = getSelectionValues(); applyProposalValue(Math.max(0, Math.round(proposal - 1))); });
+
+    el.noteInput.addEventListener('input', (e) => {
+      if (!selectedItem?.row) return;
+      itemNotes.set(selectedItem.row.uid, e.target.value);
+    });
+
+    el.totalBudgetBtn?.addEventListener('click', openBudgetChart);
+    el.budgetChartClose?.addEventListener('click', () => el.budgetChartModal?.classList.remove('open'));
+    el.allAccountsClose?.addEventListener('click', () => el.allAccountsModal?.classList.remove('open'));
+    el.allAccountsModal?.addEventListener('click', (e) => { if (e.target === el.allAccountsModal) el.allAccountsModal.classList.remove('open'); });
+    el.budgetChartModal?.addEventListener('click', (e) => { if (e.target === el.budgetChartModal) el.budgetChartModal.classList.remove('open'); });
+    el.sliceInfoClose?.addEventListener('click', () => el.sliceInfoModal?.classList.remove('open'));
+    el.sliceInfoModal?.addEventListener('click', (e) => { if (e.target === el.sliceInfoModal) el.sliceInfoModal.classList.remove('open'); });
+    el.budgetChartCanvas?.addEventListener('mousemove', (e) => {
+      const dept = getCurrentDept();
+      if (!dept || !el.budgetChartModal?.classList.contains('open')) return;
+      const summary = getDepartmentBudgetSummary(dept);
+      const total = Math.max(0, summary.personnel) + Math.max(0, summary.operating);
+      if (total <= 0.000001) return;
+      const rect = el.budgetChartCanvas.getBoundingClientRect();
+      const x = e.clientX - rect.left;
+      const y = e.clientY - rect.top;
+      const cx = rect.width / 2;
+      const cy = rect.width / 2;
+      const dx = x - cx;
+      const dy = y - cy;
+      const dist = Math.sqrt(dx * dx + dy * dy);
+      const outer = rect.width * 0.33 + 16;
+      if (dist > outer || dist < rect.width * 0.15) {
+        if (budgetChartHover !== -1) { budgetChartHover = -1; drawBudgetChart(summary); }
+        return;
+      }
+      let ang = Math.atan2(dy, dx) + Math.PI / 2;
+      if (ang < 0) ang += Math.PI * 2;
+      const personnelAngle = (Math.max(0, summary.personnel) / total) * Math.PI * 2;
+      const nextHover = ang <= personnelAngle ? 0 : 1;
+      if (nextHover !== budgetChartHover) {
+        budgetChartHover = nextHover;
+        drawBudgetChart(summary);
+      }
+    });
+    el.budgetChartCanvas?.addEventListener('mouseleave', () => {
+      const dept = getCurrentDept();
+      if (!dept) return;
+      const summary = getDepartmentBudgetSummary(dept);
+      if (budgetChartHover !== -1) {
+        budgetChartHover = -1;
+        drawBudgetChart(summary);
+      }
+    });
+
+    el.resetLineBtn.addEventListener('click', resetSelectedLine);
+    el.deleteCustomAcctBtn?.addEventListener('click', () => {
+      if (!selectedItem?.row || selectedItem.section === 'roster') return;
+      deleteAccountLine(selectedItem.section, selectedItem.row);
+    });
+    el.addPosBtn?.addEventListener('click', addRosterPosition);
+    el.closeAddPosBtn?.addEventListener('click', () => el.rosterAddModal?.classList.remove('open'));
+    el.rosterAddModal?.addEventListener('click', (e) => { if (e.target === el.rosterAddModal) el.rosterAddModal.classList.remove('open'); });
+    el.addAcctBtn?.addEventListener('click', addAccountLine);
+    el.newAcctType?.addEventListener('change', () => {
+      const isSub = (el.newAcctType?.value || 'budget') === 'subproject';
+      if (el.newAcctParent) el.newAcctParent.style.display = isSub ? '' : 'none';
+    });
+    el.closeAddAcctBtn?.addEventListener('click', () => el.accountAddModal?.classList.remove('open'));
+    el.accountAddModal?.addEventListener('click', (e) => { if (e.target === el.accountAddModal) el.accountAddModal.classList.remove('open'); });
+
+    el.nextBtn.addEventListener('click', handleNext);
+    el.exportBtn.addEventListener('click', exportWorkbook);
+    el.comboViewBtn?.addEventListener('click', () => {
+      allAccountsGrouped = !allAccountsGrouped;
+      if (el.comboViewBtn) {
+        el.comboViewBtn.classList.toggle('active', allAccountsGrouped);
+        el.comboViewBtn.textContent = allAccountsGrouped ? 'Services View: On' : 'Services View: Off';
+      }
+      if (String(el.deptSelect?.value || '') === '__all__') renderData();
+    });
+
+    el.deptSelect.addEventListener('change', () => {
+      const v = String(el.deptSelect?.value || '');
+      if (v === '__recimpact__') activeSection = 'recimpact';
+      else if (v === '__treebank__') activeSection = 'treebank';
+      else if (activeSection === 'recimpact' || activeSection === 'treebank') activeSection = 'personnel';
+
+      el.tabBtns.forEach((b) => b.classList.toggle('active', b.dataset.section === activeSection));
+      selectedItem = null;
+      updateSectionEditToggleButton();
+      renderData();
+    });
+    el.tabBtns.forEach((btn) => btn.addEventListener('click', () => { activeSection = btn.dataset.section; selectedItem = null; el.tabBtns.forEach((b) => b.classList.toggle('active', b === btn)); updateSectionEditToggleButton(); renderData(); }));
+    el.sectionEditToggleBtn?.addEventListener('click', () => {
+      sectionEditEnabled[activeSection] = !sectionEditEnabled[activeSection];
+      if (!sectionEditEnabled[activeSection] && selectedItem?.section === activeSection) selectedItem = null;
+      updateSectionEditToggleButton();
+      renderData();
+    });
+  </script>
+  <script>
+    if ('serviceWorker' in navigator) {
+      window.addEventListener('load', () => {
+        navigator.serviceWorker.register('./sw.js');
+      });
+    }
+  </script>
+</body>
+</html>
